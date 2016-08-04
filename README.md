@@ -67,7 +67,7 @@ This array will hold a list of valid WAV files found on the SD card.  The number
 
 ## Conclusion
 
-I built this project because I wanted to have full control over the sound effects that were played, plus it helps that it only costs around $40.00 if you buy all theparts listed above (except for the SD card as the price on those varies greatly...)  
+I built this project because I wanted to have full control over the sound effects that were played, plus it helps that it only costs around $40.00 if you buy all the parts listed above (except for the SD card as the price on those varies greatly...)  
 
 It's a fun project and adds that little something extra to your TK build.  Have fun!
 

@@ -31,7 +31,7 @@ There are a wealth of examples on the Teensy website as well in the Arduino soft
 
 Once you have installed the Arduino and Teensyduino software packages, you should familiarize yourself with the tutorials. 
 
-- Download the example .WAV files to your micro SD card.  The file named "STARTUP.WAV" is a special file that is played when the board is turned on.
+- Download the example .WAV files (SDCard.zip) and unzip them to your micro SD card.  The file named "STARTUP.WAV" is a special file that is played when the board is turned on.
 - You can then load the TK Talkie sketch and compile and upload it to your Teensy.
 
 If everything is working correctly, you should hear the STARTUP.WAV file play when your board resets.

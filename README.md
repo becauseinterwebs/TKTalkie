@@ -67,7 +67,7 @@ This array will hold a list of valid WAV files found on the SD card.  The number
 
 ## A Note About WAV Files and Sound Levels
 
-Since the recorded levels of the WAV files you use can vary greatly, if you are making your own try to keep the levels as close as possible (to avoid things like really loud effects vs. quiet effects.)  There are several places in the setup() function where you can make these adjustments.  They are noted with comments such as "adjust as needed."
+Since the recorded levels of the WAV files you use can vary greatly, if you are making your own try to keep the levels as close as possible (to avoid things like really loud effects vs. quiet effects.)  You can adjust the microphone gain, the SD Card Player output levels, etc.  There are several places in the setup() function where you can make these adjustments.  They are noted with comments such as "adjust as needed."
 
 ## Conclusion
 

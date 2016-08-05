@@ -65,6 +65,10 @@ These are the input (amplitude) levels that trigger the sound.  The VOL_THRESHOL
 
 This array will hold a list of valid WAV files found on the SD card.  The number 99 is abitrary.  Ideally you don't want to set it to more than the number of files you will have on your card, but setting it to a higher number will let you add more files to the SD card later without having to recompile the sketch.
 
+## A Note About WAV Files and Sound Levels
+
+Since the recorded levels of the WAV files you use can vary greatly, if you are making your own try to keep the levels as close as possible (to avoid things like really loud effects vs. quiet effects.)  There are several places in the setup() function where you can make these adjustments.  They are noted with comments such as "adjust as needed."
+
 ## Conclusion
 
 I built this project because I wanted to have full control over the sound effects that were played, plus it helps that it only costs around $40.00 if you buy all the parts listed above (except for the SD card as the price on those varies greatly...)  

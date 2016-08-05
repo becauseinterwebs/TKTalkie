@@ -164,6 +164,7 @@ void setup()
   audioShield.enable();
   
   // volume level is 0.0 to 1.0
+  // adjust this as needed
   audioShield.volume(0.6);
   
   // tell the audio shield to use the MIC pins
@@ -173,6 +174,7 @@ void setup()
   //audioShield.inputSelect(AUDIO_INPUT_LINEIN);
   
   // adjust the gain of the input
+  // adjust this as needed
   audioShield.micGain(36);
 
   // You can modify these values to process the voice 

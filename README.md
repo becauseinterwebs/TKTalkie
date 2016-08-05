@@ -50,7 +50,7 @@ The sketch is pretty well noted throughout, so it should be pretty easy to under
 
 The loop() function is the main function of any 'duino sketch.  In this loop, the input (microphone or line-in) is checked to see if there is an audio signal.  If there is, it will wait until the signal goes away (i.e. stopped talking) and then randomly select a sound to play from the card.
 
-You will see some defined constancts:
+You will see some defined constants:
 
     const int MIN_SILENCE_TIME = 350;
 

@@ -33,6 +33,10 @@
 #include <SD.h>
 #include <SerialFlash.h>
 
+// You should be able to import the below code block into the GUI editor at 
+// http://www.pjrc.com/teensy/gui if you want to add any components or change 
+// any connections.
+
 // GUItool: begin automatically generated code
 AudioPlaySdWav           playSdWav1;     //xy=111,219
 AudioInputI2S            i2s1;           //xy=122,100
@@ -120,9 +124,6 @@ void playFile(const char* filename)
   // Start playing the file.  This sketch continues to
   // run while the file plays.
   playSdWav1.play(filename);
-
-  // A brief delay for the library read WAV info
-  wait(5);
 
   // Simply wait for the file to finish playing.
   while (playSdWav1.isPlaying()) {

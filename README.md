@@ -6,7 +6,7 @@ This code is based on examples that come with the Teensy board from www.pjrc.com
 In particular, the equipment that this was written for (but should work with other boards with minimal modification):
 
 -  Teensy 3.2 available at http://www.pjrc.com/store/teensy32.html.  For a few more dollars, you can get one that already has the pins soldered on it (a HUGE timesaver!) http://www.pjrc.com/store/teensy32_pins.html
--  Teensy Audio Board available at http://www.pjrc.com/tore/teensy3_audio.html
+-  Teensy Audio Board available at http://www.pjrc.com/store/teensy3_audio.html
 -  (Optional...but makes life easier!) 14 pin header (http://www.pjrc.com/store/header_14x1.html) and socket (http://www.pjrc.com/store/socket_14x1.html) for mounting the audio shield to the Teensy (instructions on Teensy website)
 -  (Optional) Micro volume pot (http://www.pjrc.com/store/pot_thumb_25k.html)
 -  Micro SD Card (at least 8 Gigs...I think that's the smallest you can get right now anyway ;)  )

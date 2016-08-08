@@ -62,17 +62,21 @@ const int SDCARD_CS_PIN    = 10;
 const int SDCARD_MOSI_PIN  = 7;
 const int SDCARD_SCK_PIN   = 14;
 
-const int MIN_SILENCE_TIME        = 350;   // The minimum time to wait before playing a sound effect after talking
-const float VOL_THRESHOLD_TRIGGER = 0.15;  // The amplitude needed to trigger the sound effects process
-const float VOL_THRESHOLD_MIN     = 0.01;  // The minimum amplitude to use when determining if you've stopped talking
+const int MIN_SILENCE_TIME        = 350;    // The minimum time to wait before playing a sound effect after talking
+const float VOL_THRESHOLD_TRIGGER = 0.18;   // The amplitude needed to trigger the sound effects process
+const float VOL_THRESHOLD_MIN     = 0.03;   // The minimum amplitude to use when determining if you've stopped talking.
+                                            // Depending upon the microphone you are using, you may get a constant signal
+                                            // that is above 0 or even 0.01.  Use the Serial monitor and add output to the 
+                                            // loop to see what signal amplitude you are receiving when the mic is "quiet."
 
-elapsedMillis ms;         // running timer...inputs are checked every 24 milliseconds
-elapsedMillis stopped;    // used to tell how long user has stopped talking
-int speaking = 0;         // flag to let us know if the user is speaking or not
+elapsedMillis ms;                           // running timer...inputs are checked every 24 milliseconds
+elapsedMillis stopped;                      // used to tell how long user has stopped talking
+int speaking = 0;                           // flag to let us know if the user is speaking or not
 
-String wavFiles[99];      // This will hold an array of the WAV files on the SD card.
-                          // 99 is an arbitrary number.  You can change it as you need to.
-int wavCount = 0;         // This keeps count of how many valid WAV files were found.
+String wavFiles[99];                        // This will hold an array of the WAV files on the SD card.
+                                            // 99 is an arbitrary number.  You can change it as you need to.
+int wavCount = 0;                           // This keeps count of how many valid WAV files were found.
+int lastRnd  = 0;                           // Keeps track of the last file played so that it is different each time
 
 /***
  * Read the contents of the SD card and put any files staring with "TKT_" and ending 
@@ -129,7 +133,33 @@ void playFile(const char* filename)
   while (playSdWav1.isPlaying()) {
     // You could check inputs here if you wanted...
   }
+
+}
+
+/***
+ * Play a random sound effect from the SD card
+ */
+void playSoundEffect()
+{
+
+  if (speaking == 1) return;
   
+  // generate a random number between 0 and the number of files read - 1
+  int rnd = lastRnd;
+  while (rnd == lastRnd) {
+    rnd = random(0, wavCount);
+  }
+  lastRnd = rnd;
+
+  // file names are stored as strings in the array
+  String filename = wavFiles[rnd];
+  
+  // have to convert the String back to a null-terminated char array for the SD card WAV player...
+  char buf[filename.length()+2];
+  filename.toCharArray(buf, filename.length()+2);
+
+  // play the file
+  playFile(buf);
 }
 
 /**
@@ -146,6 +176,17 @@ void wait(unsigned int milliseconds)
 }
 
 /***
+ * Check the optional volume pot for output level
+ */
+void readVolume()
+{
+    // comment these lines if your audio shield does not have the optional volume pot soldered on
+    float vol = analogRead(15);
+    vol = vol / 1024;
+    audioShield.volume(vol);
+}
+
+/***
  * Initial setup...runs only once when the board is turned on.
  */
 void setup() 
@@ -155,7 +196,7 @@ void setup()
   // for output while you are developing, so you 
   // can uncomment this and use Serial.println()
   // to write messages to the console.
-  // Serial.begin(9600);
+  //Serial.begin(9600);
   
   // Always allocate memory for the audio shield!
   AudioMemory(64);
@@ -164,8 +205,7 @@ void setup()
   audioShield.enable();
   
   // volume level is 0.0 to 1.0
-  // adjust this as needed
-  audioShield.volume(0.6);
+  readVolume();
   
   // tell the audio shield to use the MIC pins
   audioShield.inputSelect(AUDIO_INPUT_MIC);
@@ -219,9 +259,6 @@ void setup()
   // when choosing a file to play from the list later on...
   randomSeed(analogRead(0));
 
-  // Go silent until someone starts talking...
-  audioShield.muteHeadphone();
-  
 }
 
 /***
@@ -241,59 +278,56 @@ void loop()
       
       // get the input amplitude...will be between 0.0 (no sound) and 1.0
       float val = rms1.read();
+
+      // Uncomment this to see what your constant signal is
+      //Serial.println(val);
       
       // Set a minimum and maximum level to use or you will trigger it accidentally 
       // by breathing, etc.  Adjust this level as necessary!
       if (val >= VOL_THRESHOLD_TRIGGER) {
-        
+         
         // If we are getting a signal, reset the "user is talking" timer
         stopped = 0;
         
         // If user is not currently speaking, then they just started talking :)
         if (speaking == 0) {
-          
-          // turn on the speaker
-          audioShield.unmuteHeadphone();
-          
+
           // Set the flag letting us know the user is speaking
           speaking = 1;
           
         }
         
-      } else if (speaking == 1 && stopped > MIN_SILENCE_TIME && val < VOL_THRESHOLD_MIN) {
+      } else if (speaking == 1) {
+        
+          if (val < VOL_THRESHOLD_MIN) {
 
-          // If the user has stopped talking for at least the required "silence" time and 
-          // the mic/line input has fallen below the minimum input threshold, play a random 
-          // sound from the card.  NOTE:  You can adjust the delay time to your liking...
-          // but it should probably be AT LEAST 1/4 second (250 milliseconds.)
+            // If the user has stopped talking for at least the required "silence" time and 
+            // the mic/line input has fallen below the minimum input threshold, play a random 
+            // sound from the card.  NOTE:  You can adjust the delay time to your liking...
+            // but it should probably be AT LEAST 1/4 second (250 milliseconds.)
 
-          // reset the speaking flag
-          speaking = 0;
+            if (stopped >= MIN_SILENCE_TIME) {
+              
+              // reset the speaking flag
+              speaking = 0;
+    
+              // play random sound effect
+              playSoundEffect();
 
-          // generate a random number between 0 and the number of files read - 1
-          int rnd = random(0, wavCount);
+            }
 
-          // file names are stored as strings in the array
-          String filename = wavFiles[rnd];
-          
-          // have to convert the String back to a null-terminated char array for the SD card WAV player...
-          char buf[filename.length()+2];
-          filename.toCharArray(buf, filename.length()+2);
+          } else {
+              
+              // Reset the "silence" counter 
+              stopped = 0;
+              
+          }
 
-          // play the file
-          playFile(buf);
-
-          // turn the speaker off again
-          audioShield.muteHeadphone();
-          
       }
       
     }
 
-    // uncomment these lines if your audio shield has the optional volume pot soldered on
-    float vol = analogRead(15);
-    vol = vol / 1024;
-    audioShield.volume(vol);
+    readVolume();
     
   }
   

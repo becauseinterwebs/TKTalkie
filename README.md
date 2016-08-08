@@ -85,7 +85,7 @@ Here are some of the more common problems you may experience.
 
 Make sure the WAV file is in 16-bit (mono or stereo) at 44100Hz.  This seems to be the ideal setting.
 
-### Sound Effects Play Before I Stop Speaking
+### Sound Effects Play Before I Stop Speaking / Sound Effects Do Not Play
 
 Most likely this is because the **VOL_THRESHOLD_MIN** is set too low, or your microphone puts off a constant signal **above** what you have the **VOL_THRESHOLD_MIN** set to.  To check this, make sure the line:
 
@@ -98,4 +98,6 @@ is uncommented, then add the following to the **loop()** function right after th
     
 If your microphone is putting off a constant signal (over 0.00) then make sure your **VOL_THRESHOLD_MIN** is set above this signal.  For example, if it puts off a constant signal of 0.02, set the threshold level to 0.03 or 0.04.
 
+### My Microphone Is Not Working
 
+First, test and make sure the microphone works on something else.  If it does, check if it has a stereo jack (two stripes on the jack) or if it is mono (just one stripe.)  If it's mono and you used a stereo input jack on the audio shield, it's probably not connecting with one of the channels.  Try pulling it out just a tad and see if you get signal. If you do, you'll need to either switch out the input jack to a mono jack, or disconnect one of the input leads on the input jack and just use one (should be left channel...but maybe the right.)

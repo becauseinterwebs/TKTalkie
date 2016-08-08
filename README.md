@@ -38,7 +38,9 @@ If everything is working correctly, you should hear the STARTUP.WAV file play wh
 
 ## WAV Files
 
-Note that the SD Card reader is expecting filenames in all uppercase, 8.3 format (file name can be up to 8 characters, extension is 3 characters.)  The way the sketch is currently written, it will load all WAV files it finds that start with "TKT_" into an array and randomly select one to play whenever you stop talking.
+You can [download a zip file with WAV files here.] (http://www.becauseinterwebs.com/downloads/TKTalkieSounds.zip)
+
+Note that the SD Card reader is expecting filenames in all uppercase, 8.3 format (file name can be up to 8 characters, extension is 3 characters.)  The way the sketch is currently written, it will load all WAV files it finds that start with "TKT_" into an array and randomly select one to play whenever you stop talking.  You can, of course, change this.
 
 If you want to make your own wav files, make sure they are at least 16-bit and sampled at 44100Hz.  It doesn't matter if they are mono or stereo.
 
@@ -74,4 +76,26 @@ Since the recorded levels of the WAV files you use can vary greatly, if you are 
 I built this project because I wanted to have full control over the sound effects that were played, plus it helps that it only costs around $40.00 if you buy all the parts listed above (except for the SD card as the price on those varies greatly...)  
 
 It's a fun project and adds that little something extra to your TK build.  Have fun!
+
+## Troubleshooting
+
+Here are some of the more common problems you may experience.
+
+### WAV Files Are Not Playing
+
+Make sure the WAV file is in 16-bit (mono or stereo) at 44100Hz.  This seems to be the ideal setting.
+
+### Sound Effects Play Before I Stop Speaking
+
+Most likely this is because the **VOL_THRESHOLD_MIN** is set too low, or your microphone puts off a constant signal **above** what you have the **VOL_THRESHOLD_MIN** set to.  To check this, make sure the line:
+
+    Serial.begin(9600);
+    
+is uncommented, then add the following to the **loop()** function right after the line where the microphone input is checked.  It should look like this:
+
+    float val = rms1.read();
+    Serial.println(val);
+    
+If your microphone is putting off a constant signal (over 0.00) then make sure your **VOL_THRESHOLD_MIN** is set above this signal.  For example, if it puts off a constant signal of 0.02, set the threshold level to 0.03 or 0.04.
+
 

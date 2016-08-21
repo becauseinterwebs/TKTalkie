@@ -213,6 +213,16 @@ void setup()
   // uncomment to use the LINE-IN pins instead...
   //audioShield.inputSelect(AUDIO_INPUT_LINEIN);
   
+  // Activate the onboard pre-processor
+  audioShield.audioPreProcessorEnable();
+  // Turn on the 5-band graphic equalizer (there is also a 7-band parametric...see the Teensy docs)
+  audioShield.eqSelect(3);
+  // Bands (from left to right) are: Low, Low-Mid, Mid, High-Mid, High.
+  // Valid values are -1 (-11.75dB) to 1 (+12dB)
+  // The settings below pull down the lows and highs and push up the mids for 
+  // more of a "tin-can" sound.
+  audioShield.eqBands(-1.0, 0, 1, 0, -1.0);
+  
   // adjust the gain of the input
   // adjust this as needed
   audioShield.micGain(36);

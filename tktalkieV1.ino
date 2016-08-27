@@ -1,6 +1,8 @@
 /****
  * TK TALKIE by Brent Williams <becauseinterwebs@gmail.com>
  * 
+ * Version 1.0
+ * 
  * WhiteArmor.net User ID: lerxstrulz
  * 
  * This simple sketch is meant to use a Teensy 3.2 with a 

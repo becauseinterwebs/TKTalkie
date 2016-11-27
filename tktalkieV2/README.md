@@ -23,12 +23,14 @@ The config file is named TKCONFIG.TXT and has the following formart for configur
 The current settings and valid values are:
 
 **startup**
+
 This is the sound that is played each time TKTalkie starts.
 
     # sound to play when TKTalkie is started
     [startup=STARTUP.WAV]
 
 **loop**
+
 The background (chatter) file.  This file starts AFTER the startup file, then will continuously loop while TKTalkie is running.
 
     # chatter loop settings
@@ -37,18 +39,21 @@ The background (chatter) file.  This file starts AFTER the startup file, then wi
 > **NOTE**: The backgound loop will be silenced while you are speaking (but will continue running)
 
 **loop_gain**
+
 This is the sound level of the loop while it is playing.  This should be set to a minimal level so that it is heard but not overpowering.
 
     # 0 to 32767, 1 is pass-thru, below 1 attenuates signal
     [loop_gain=7]
     
 **silence_time**
+
 The amount of time (in milliseconds...or *thousandths* of a second) to wait to make sure you are finished talking before playing an effect (static burst or mic click effect, etc.)
 
     # VOICE ACTIVATION SETTINGS
     [silence_time=350]
 
 **voice_start**   (*formerly VOL_THRESHOLD_TRIGGER*)
+
 This is the input level received from the microphone that will trigger the Voice Activation when you begin talking.
 
     # valid values are any decimal value between 0.00 and 1.00
@@ -57,6 +62,7 @@ This is the input level received from the microphone that will trigger the Voice
 > **NOTE"": You can use the new Calibration Wizard via the serial interface to help set this level
 
 **voice_stop**  (*formerly VOL_THRESHOLD_MIN*)
+
 The input level received from the microphone that indicates you are finished talking.
 
     [voice_stop=0.02]
@@ -66,23 +72,27 @@ The input level received from the microphone that indicates you are finished tal
 *The following entries are for using the PTT (Push-to-Talk) function*
 
 **button_pin**
+
 This setting tells TKTalkie which pin on the Teensy your PTT button is connected to.
 
     # PTT (Push-To-Talk) SETTINGS
     [button_pin=2]
     
 **button_click**
+
 The sound to play when the PTT button is pushed (before you start talking.)  When the button is released, a random sound will be played.
 
     [button_click=BUTTON.WAV]
 
 **button_gain**
+
 The output level of the button sound.  
 
     # 0 to 32767, 1 is pass-thru, below 1 attenuates signal
     [button_gain=1]
    
 **input**
+
 This setting specifies which voice input will be used, the microphone input or the line-in input. Default is microphone.
 
     # MICROPHONE/LINE-IN SETTINGS
@@ -90,6 +100,7 @@ This setting specifies which voice input will be used, the microphone input or t
     [input=0]
 
 **mic_gain**
+
 The voice input level.
 
     # 0 to 63
@@ -98,6 +109,7 @@ The voice input level.
 > **NOTE**: If you are experiencing feedback, try adjusting the *mic_gain* setting first.
 
 **effects_gain**
+
 This sets the output level of sound effects.
 
     # SOUND EFFECTS (STATIC BURSTS, ETC.)
@@ -105,6 +117,7 @@ This sets the output level of sound effects.
     [effects_gain=5]
 
 **eq**
+
 Specify the equalizer type to use.
 
     # EQUALIZER SETTINGS
@@ -112,6 +125,7 @@ Specify the equalizer type to use.
     [eq=3]
     
 **eq_bands**
+
 Depending upon they type of equalizer selected, specify the settings for each band.  Bands are comma separated and valid decimal values from -1.00 to 1.00.
 
     # for parametric/graphic = 5 bands, for bass/treble = 3 bands
@@ -119,6 +133,7 @@ Depending upon they type of equalizer selected, specify the settings for each ba
     [eq_bands=-1,0,1,0,-1]
 
 **voice_gain**
+
 Set the voice output level.
 
     # VOICE SETTINGS
@@ -126,6 +141,7 @@ Set the voice output level.
     [voice_gain=1]
 
 **bitcrushers**
+
 There are two bitcrushers to process the voice input and make it sound a little more tinny and robotic as if it is coming through a radio.  These are comma separated values.  Valid values for bits are 1 to 16, and valid values for rate are from 1 to 44100.
 
     # BITCRUSHER SETTINGS - VOCAL EFFECTS
@@ -136,6 +152,7 @@ There are two bitcrushers to process the voice input and make it sound a little 
 > **NOTE**: You may need to disable these if using other voice processers such as a voice changer with TKTalkie.
 
 **noise_gain**
+
 While talking, pink noise is played behind your voice to help simulate radio communications.  This setting sets the noise level.  Set to 0 to disable.
 
     # PINK NOISE GENERATOR
@@ -143,6 +160,7 @@ While talking, pink noise is played behind your voice to help simulate radio com
     [noise_gain=1]
 
 **debug**
+
 Turns the debug setting on or off.  Default is off.  When on, messages during program operation will be displayed to the serial interface.  This can be useful when testing configuration settings.
 
     # Turn debug on or off.  Valid values are 1 (on) or 0 (off.) 

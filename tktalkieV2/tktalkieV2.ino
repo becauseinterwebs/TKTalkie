@@ -1,18 +1,15 @@
 /****
  * TK TALKIE by Brent Williams <becauseinterwebs@gmail.com>
  * 
- * Version 2.0 (Nov 21, 2016)
+ * Version 2.0 (Nov 26, 2016)
  * 
  * WhiteArmor.net User ID: lerxstrulz
  * 
- * This simple sketch is meant to use a Teensy 3.2 with a 
+ * This sketch is meant to use a Teensy 3.2 with a 
  * Teensy Audio Shield and reads sounds from an SD card and plays 
  * them after the user stops talking to simulate comm noise 
  * such as clicks and static.  It can be easily adapted to be 
  * used with other controllers and audio shields.
- * 
- * This sketch incorporates some of the sample code provided with 
- * Teensy and Arduino.
  * 
  * You are free to use this code in your own projects, provided 
  * they are non-commercial in use.
@@ -22,10 +19,16 @@
  * the signal path, add more effects, etc., you can copy and paste the 
  * code marked by 'GUITool' into the online editor at the above URL.
  * 
- * A lot of this code was taken from the example code that comes with 
- * Teensy/Arduino and modified.
- * cha
  * WHAT'S NEW:
+ * 
+ * V2.0
+ *  1.  Added support for background loop (chatter) file
+ *  2.  Added text config file to hold setting instead of having to modify 
+ *      and recompile source code.
+ *  3.  Added support for serial interface to allow live editing of settings
+ *  4.  Added calibration wizard
+ *  
+ * V1.1
  *  1.  Added support for PTT (Push-To-Talk) Button.  If a button is present, it 
  *      is activated on first press.  Press it for 2 seconds without talking to 
  *      go back to Voice Activated mode.
@@ -106,11 +109,8 @@ String wavFiles[99];                        // This will hold an array of the WA
 int wavCount = 0;                           // This keeps count of how many valid WAV files were found.
 int lastRnd  = 0;                           // Keeps track of the last file played so that it is different each time
 
-// *** PTT BUTTON SETTINGS *** 
 Bounce PTT = Bounce();                      // Used to read the PTT button (if attached)
-int BUTTON_PIN = 2;                         // The pin to which a PTT button is connected (not required.) Change it if you 
-                                            // attach it to a different pin (should use 0, 1 or 2, though...as not all pins
-                                            // are available since they are used by the Audio Adaptor.
+
 boolean silent = false;                     // used for PTT and to switch back to Voice Activated mode
 boolean button_initialized = false;         // flag that lets us know if the PTT has been pushed or not to go into PTT mode
 
@@ -152,12 +152,17 @@ float    VOICE_STOP      = 0.02;   // The minimum amplitude to use when determin
                                    // Depending upon the microphone you are using, you may get a constant signal
                                    // that is above 0 or even 0.01.  Use the Serial monitor and add output to the 
                                    // loop to see what signal amplitude you are receiving when the mic is "quiet."
-
+int      BUTTON_PIN;               // The pin to which a PTT button is connected (not required.) Change it if you 
+                                   // attach it to a different pin (should use 0, 1 or 2, though...as not all pins
+                                   // are available since they are used by the Audio Adaptor.
 boolean DEBUG = false;             // Set to true to have debug messages printed out...useful for testing
 
 elapsedMillis loopMillis = 0;
 uint16_t loopLength;
 
+/***
+ * Parse and set a configuration setting
+ */
 void parseSetting(String settingName, String settingValue) 
 {
   debug(settingName + ": " + settingValue);
@@ -229,6 +234,8 @@ void parseSetting(String settingName, String settingValue)
       i++;
       token = strtok(NULL, ",");
     }
+  } else if (settingName.equalsIgnoreCase("button_pin")) {
+    BUTTON_PIN = settingValue.toInt();
   } else if (settingName.equalsIgnoreCase("debug")) {
     if (settingValue.toInt() > 0) {
       DEBUG = true;
@@ -238,6 +245,9 @@ void parseSetting(String settingName, String settingValue)
   }
 }
 
+/***
+ * Converts all in-memory settings to string
+ */
 String settingsToString() 
 {
   String result = "";
@@ -364,6 +374,9 @@ boolean loadSettings()
   return loadSettings(SETTINGS_FILE);
 }
 
+/***
+ * Apply settings
+ */
 void applySettings() 
 {
   // Turn on the 5-band graphic equalizer (there is also a 7-band parametric...see the Teensy docs)
@@ -564,7 +577,9 @@ float readVolume()
     return vol;
 }
 
-// Check if the PTT button was pressed
+/*** 
+ * Check if the PTT button was pressed 
+ */
 boolean checkButton() 
 {
   PTT.update();
@@ -576,8 +591,10 @@ boolean checkButton()
   }
 }
 
-// This is played when switching from PTT back to Voice Activated mode.
-// You could also play a .WAV file here
+/***
+ * This is played when switching from PTT back to Voice Activated mode.
+ * You could also play a .WAV file here 
+ */
 void PTTWarning() 
 {
   waveform1.frequency(660);
@@ -596,14 +613,18 @@ void PTTWarning()
   waveform1.amplitude(0);
 }
 
-// Turns the volume down on the chatter loop
+/***
+ * Turns the volume down on the chatter loop
+ */
 void loopOff() 
 {
   loopMixer.gain(0, 0);
   loopMixer.gain(1, 0);
 }
 
-// Turns the volume up on the chatter loop
+/***
+ * Turns the volume up on the chatter loop
+ */
 void loopOn() 
 {
   // gradually raise level to avoid pops 
@@ -617,7 +638,9 @@ void loopOn()
   loopMixer.gain(1, LOOP_GAIN);
 }
 
-// Turns off the voice channels on the mixer
+/***
+ * Turns off the voice channels on the mixer
+ */
 void voiceOff() 
 {
   speaking = false;
@@ -627,7 +650,9 @@ void voiceOff()
   voiceMixer.gain(1, 0);
 }
 
-// Turns on the voice channels on the mixer
+/***
+ * Turns on the voice channels on the mixer
+ */
 void voiceOn() 
 {
   speaking = true;
@@ -639,6 +664,9 @@ void voiceOn()
   voiceMixer.gain(1, VOICE_GAIN);
 }
 
+/***
+ * Used for calibration wizard...takes sample readings from input
+ */
 void sampleMic(String prompt, float &avg, float &loBase, float &hiBase) {
   Serial.println(prompt);
   Serial.print("Listening in ");
@@ -680,6 +708,9 @@ void sampleMic(String prompt, float &avg, float &loBase, float &hiBase) {
   avg = total/count;
 }
 
+/***
+ * Calibration wizard
+ */
 void calibrate() 
 {
   // disable normal operation
@@ -871,6 +902,9 @@ void loop()
   
 }
 
+/***
+ * Called from main loop
+ */
 void run() {
 
   // check loop
@@ -1090,6 +1124,10 @@ void showSettings() {
   printDivider();
   Serial.println("");
 }
+
+/***
+ * Prints debug messages
+ */
 void debug(String text) 
 {
   if (DEBUG == true) {

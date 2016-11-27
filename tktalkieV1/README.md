@@ -1,6 +1,4 @@
-# TK Talkie
-
-> **LATEST VERSION AVAILABLE IN tktalkieV2**
+# TK Talkie V1
 
 Code for Teensy 3.2 (or arduino compatible) and an audio shield to automatically add comm static when talking...or more precisely...when someone STOPS talking.
 
@@ -53,7 +51,22 @@ The sketch is pretty well noted throughout, so it should be pretty easy to under
 
 ## Development Notes/How It Works
 
-Please see the README file for each version to see how it works.
+The loop() function is the main function of any 'duino sketch.  In this loop, the input (microphone or line-in) is checked to see if there is an audio signal.  If there is, it will wait until the signal goes away (i.e. stopped talking) and then randomly select a sound to play from the card.
+
+You will see some defined constants:
+
+    const int MIN_SILENCE_TIME = 350;
+
+This is the amount of time to wait (in milliseconds) after no more input is detected before playing a sound.  You don't want to make this wait too long or there will be a long silence after you stop talking.  Also, you don't want to make it too short so that if you pause briefly while speaking it doesn't trigger the sound.  Around 250 to 350 milliseconds should work just fine.
+
+    const float VOL_THRESHOLD_TRIGGER  = 0.15;
+    const float VOL_THRESHOLD_MIN      = 0.01;
+
+These are the input (amplitude) levels that trigger the sound.  The VOL_THRESHOLD_TRIGGER is the level that needs to be hit in order to let the software know you've started talking.  The VOL_THRESHOLD_MIN is the level that the input needs to fall below after you've started talking to know it's time to wait and see if you are done and then play a random sound.  These two values let you tweak the triggers that work best for your voice.  This allows you to start talking and get a little quieter without triggering the sound effects accidentally.  The trigger number helps to prevent false positives that can be set off just by breathing...it's not perfect, but the default settings should work pretty well.  If not, just tweak them until you find a combination that works for you.
+
+    String wavFiles[99];
+
+This array will hold a list of valid WAV files found on the SD card.  The number 99 is abitrary.  Ideally you don't want to set it to more than the number of files you will have on your card, but setting it to a higher number will let you add more files to the SD card later without having to recompile the sketch.
 
 ## A Note About WAV Files and Sound Levels
 
@@ -77,7 +90,7 @@ Make sure the WAV file is in 16-bit (mono or stereo) at 44100Hz.  This seems to 
 
 ### Sound Effects Play Before I Stop Speaking / Sound Effects Do Not Play
 
-Most likely this is because the **VOL_THRESHOLD_MIN** (or **VOICE_STOPi** in V2) is set too low, or your microphone puts off a constant signal **above** what you have the **VOL_THRESHOLD_MIN** (or ** VOICE_STOP** in V2) set to.  To check this, make sure the line:
+Most likely this is because the **VOL_THRESHOLD_MIN** is set too low, or your microphone puts off a constant signal **above** what you have the **VOL_THRESHOLD_MIN** set to.  To check this, make sure the line:
 
     Serial.begin(9600);
     

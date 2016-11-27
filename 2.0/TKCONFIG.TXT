@@ -1,0 +1,56 @@
+# TKTALKIE v2.0
+# These are the default settings!  Please visit TkTalkie.com 
+# to see how to modify for your setup.
+
+# sound to play when TKTalkie is started
+[startup=STARTUP.WAV]
+
+# chatter loop settings
+[loop=CHATTER.WAV]
+# 0 to 32767, 1 is pass-thru, below 1 attenuates signal
+[loop_gain=7]
+
+# VOICE ACTIVATION SETTINGS
+[silence_time=350]
+[voice_start=0.35]
+[voice_stop=0.02]
+
+# PTT (Push-To-Talk) SETTINGS
+[button_pin=2]
+[button_click=BUTTON.WAV]
+# 0 to 32767, 1 is pass-thru, below 1 attenuates signal
+[button_gain=1]
+
+# MICROPHONE/LINE-IN SETTINGS
+# input settings (0 = microphone, 1 = line-in)
+[input=0]
+# 0 to 63
+[mic_gain=15] 
+
+# SOUND EFFECTS (STATIC BURSTS, ETC.)
+# 0 to 32767, 1 is pass-thru, below 1 attenuates signal
+[effects_gain=5]
+
+# EQUALIZER SETTINGS
+# 0 = flat (none, 1 = parametric, 2 = bass/treble, 3 = graphic
+[eq=3]
+# for parametric/graphic = 5 bands, for bass/treble = 3 bands
+# bands are low to high: -1 (-11.75dB to 1 +12dB)
+[eq_bands=-1,0,1,0,-1]
+
+# VOICE SETTINGS
+# 0 to 32767, 1 is pass-thru, below 1 attenuates signal
+[voice_gain=1]
+
+# BITCRUSHER SETTINGS - VOCAL EFFECTS
+# Format = bits1,rate1,bits2,rate2
+# Set to 16,41000,16,41000 to just pass-thru (disable)
+[bitcrushers=12,16384,10,10240]
+
+# PINK NOISE GENERATOR
+# 0 to 32767, 1 is pass-thru, below 1 attenuates signal
+[noise_gain=1]
+
+# Turn debug messages on/off (1/0)
+[debug=0]
+

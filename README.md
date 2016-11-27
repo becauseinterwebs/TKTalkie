@@ -1,6 +1,6 @@
 # TK Talkie
 
-> **LATEST VERSION AVAILABLE IN tktalkieV2**
+> **LATEST VERSION AVAILABLE IN 2.0**
 
 Code for Teensy 3.2 (or arduino compatible) and an audio shield to automatically add comm static when talking...or more precisely...when someone STOPS talking.
 

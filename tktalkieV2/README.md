@@ -1,6 +1,6 @@
 # TKTalkie v2.0
 
-The TKTalkie software is part of the TKTalkie DIY project.  This revision has some significant changes designed to making it easier to configure and use the system WITHOUT having to recompile and upload the software to the hardward device and contains the following improvements:
+The TKTalkie software is part of the TKTalkie DIY project.  This revision has some significant changes designed to making it easier to configure and use the system WITHOUT having to recompile and upload the software to the Teensy board and contains the following improvements:
 
   - Text config file allows you to customize settings and options without having to recompile the code
   - Calibration wizard added to help find optimum settings for your particular use
@@ -12,7 +12,7 @@ The TKTalkie software is part of the TKTalkie DIY project.  This revision has so
 
 You can now have TKTalkie load configuration settings from a file on the SD card.  This is the preferred method and allows you the flexibility of using the system in more than one application.
 
-The config file is named TKCONFIG.TXT and has the following formart for configuration values:
+The config file is named TKCONFIG.TXT and has the following format for configuration values:
 
     [setting_key=setting_value]  *Note the use of [ and ] for the settings!
     
@@ -40,7 +40,7 @@ The background (chatter) file.  This file starts AFTER the startup file, then wi
 
 **loop_gain**
 
-This is the sound level of the loop while it is playing.  This should be set to a minimal level so that it is heard but not overpowering.
+This is the sound level of the loop while it is playing.
 
     # 0 to 32767, 1 is pass-thru, below 1 attenuates signal
     [loop_gain=7]
@@ -191,13 +191,13 @@ There are now three ways to change configuration settings:
 - Change configuration values in the TKCONFIG.TXT file and restart the device
 - Make live changes via the serial interface and then save them
 
-### Making Configruation Changes via Code
+### Making Configuation Changes via Code
 
-If you do not wish to use a config file, you can simple alter the default options located at the top of the Arduiono sketch and recompile, then upload, your changes to your device.
+If you do not wish to use a config file, you can simply alter the default options located at the top of the Arduiono sketch and recompile, then upload, your changes to your device.
 
 ### Making Configuration Changes via Config File
 
-With this revision, all configuration options are now loaded from a config file, called TKCONFIG.TXT, located on the SD card.  Using this option, you can simply edit this file, save your changes, then reinsert the card into the Teensy device and restart. Please see the [Configuration File](Configuration File) section for a list of available options.
+With this revision, all configuration options are now loaded from a config file, called TKCONFIG.TXT, located on the SD card.  Using this option, you can simply edit this file, save your changes, then reinsert the card into the Teensy device and restart. Please see the [Configuration File](#Configuration File) section for a list of available options.
 
 ### Making Configuration Changes via Serial Interface
 
@@ -205,6 +205,6 @@ You can now make live, real-time changes via the serial interface.  Changes take
 
     setting_key=new_value [ENTER]
     
-The new setting will take effect immediately.  This is a great way to allow you to tweak and test settings for your particular application of the TKTalkie system.  Please see the [Configuration File](Configuration File) section for a list of available options.
+The new setting will take effect immediately.  This is a great way to allow you to tweak and test settings for your particular application of the TKTalkie system.  Please see the [Configuration File](#Configuration File) section for a list of available options.
     
 For more information regarding TKTalkie, please visit [www.tktalkie.com](http://www.tktalkie.com).

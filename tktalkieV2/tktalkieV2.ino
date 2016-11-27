@@ -791,7 +791,9 @@ void loop()
      } else if (str.equalsIgnoreCase("load")) {
         loadSettings();  
      } else if (str.equalsIgnoreCase("save")) {
-        saveSettings();   
+        saveSettings();  
+     } else if (str.equalsIgnoreCase("backup")) {
+        saveSettings(BACKUP_FILE); 
      } else if (str.equalsIgnoreCase("settings")) {
         showSettings();
      } else if (str.equalsIgnoreCase("files")) {

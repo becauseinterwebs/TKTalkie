@@ -13,7 +13,7 @@
  * 
  * You are free to use this code in your own projects, provided 
  * they are non-commercial in use.
- * 
+ * o
  * The audio components and connections were made using the GUI tool 
  * available at http://www.pjrc.com/teensy/gui.  If you want to modify 
  * the signal path, add more effects, etc., you can copy and paste the 
@@ -158,14 +158,19 @@ int      BUTTON_PIN;               // The pin to which a PTT button is connected
 boolean DEBUG = false;             // Set to true to have debug messages printed out...useful for testing
 
 elapsedMillis loopMillis = 0;
-uint16_t loopLength;
+long loopLength;
 
 /***
  * Parse and set a configuration setting
  */
 void parseSetting(String settingName, String settingValue) 
 {
+
+  settingName.trim();
+  settingValue.trim();
+  
   debug(settingName + ": " + settingValue);
+  
   if (settingName.equalsIgnoreCase("volume")) {
     MASTER_VOLUME = settingValue.toFloat();  
     if (MASTER_VOLUME > 1) { 
@@ -251,6 +256,10 @@ void parseSetting(String settingName, String settingValue)
 String settingsToString() 
 {
   String result = "";
+  result += "TKTalkie v2.0 www.tktalkie.com\n";
+  if (MASTER_VOLUME) {
+    result += "[volume=" + String(MASTER_VOLUME, 4) + "\n";
+  }
   result += "# sound to play when TKTalkie is started\n";
   result += "[startup=" + STARTUP_WAV + "]\n";
   result += "# chatter loop settings\n";
@@ -290,6 +299,7 @@ String settingsToString()
   result += "# PINK NOISE GENERATOR\n";
   result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
   result += "[noise_gain=" + String(NOISE_GAIN, 4) + "]\n";
+  result += "[debug=" + String((int)DEBUG) + "]\n";
   return result;
 }
 
@@ -498,7 +508,7 @@ void loadFiles(File dir)
  */
 long playEffect(int player, String filename) 
 {
-  long len;
+  long len = 0;
   // Convert string to char array
   char buf[filename.length()+2];
   filename.toCharArray(buf, filename.length()+2);
@@ -507,15 +517,16 @@ long playEffect(int player, String filename)
   switch (player) {
     case LOOP_PLAYER:
       loopPlayer.play(buf);
-      delay(100);
+      delay(10);
       len = loopPlayer.lengthMillis();
       break;
     default:
       effectsPlayer.play(buf);
-      delay(100);
+      delay(10);
       len = effectsPlayer.lengthMillis();
       break;
   }
+  debug("PLAYING " +  filename + " @ " + String(len) + " ms (" + String(len/1000) + " sec)");
   return len;
 }
 
@@ -524,7 +535,6 @@ long playEffect(int player, String filename)
  */
 void playFile(int player, String filename, int nextState)
 {
-  debug("PLAYING: " + filename);
   long l = playEffect(player, filename);
   if (l) {
     delay(l+100);
@@ -768,7 +778,7 @@ void setup()
   // for output while you are developing, so you 
   // can uncomment this and use Serial.println()
   // to write messages to the console.
-  Serial.begin(9600);
+  Serial.begin(57600);
   delay(500);
   Serial.println("");
   Serial.println("TKTalkie (c) 2016 Because...Interwebs!");
@@ -1065,6 +1075,12 @@ File openFile(String filename, int mode)
 {
   char buf[filename.length()+2];
   filename.toCharArray(buf, filename.length()+2);
+  // Thanks to TanRu !
+  if (mode == FILE_WRITE) {
+    if (SD.exists(buf)) {
+      SD.remove(buf);
+    }
+  }
   return SD.open(buf, mode);  
 }
 

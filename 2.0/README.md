@@ -173,6 +173,7 @@ This version of the sofware allows you to change configuration settings, save co
 When connected, the following commands are available:
 
     backup           Quick backup of in-memory settings to SETTINGS.BAK
+    restore          Quick restore of SETTINGS.BAK file
     save             Saves the current in-memory configuration to the default TKCONFIG.TXT file
     load             Loads the configuration values fromt the default TKCONFIG.TXT file
     save=filename    Saves the current in-memory configuration to the specified file

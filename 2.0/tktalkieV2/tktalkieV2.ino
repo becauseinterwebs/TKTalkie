@@ -21,6 +21,11 @@
  * 
  * WHAT'S NEW:
  * 
+ * V2.1 
+ *  1.  A few bug fixes including saving of master volume and parsing of 
+ *      settings file.
+ *  2.  Fixed compiler error for unsigned integer check
+ *      
  * V2.0
  *  1.  Added support for background loop (chatter) file
  *  2.  Added text config file to hold setting instead of having to modify 
@@ -45,7 +50,6 @@
  * 
  * 
  */
- 
 #include <Audio.h>
 #include <Wire.h>
 #include <SPI.h>
@@ -53,30 +57,19 @@
 #include <SerialFlash.h>
 #include <Bounce2.h>
 
-// You should be able to import the below code block into the GUI editor at 
-// http://www.pjrc.com/teensy/gui if you want to add any components or change 
-// any connections.
-
 // GUItool: begin automatically generated code
-#include <Audio.h>
-#include <Wire.h>
-#include <SPI.h>
-#include <SD.h>
-#include <SerialFlash.h>
-
-// GUItool: begin automatically generated code
-AudioInputI2S            i2s1;           //xy=187,151
-AudioPlaySdWav           loopPlayer;     //xy=190,428
-AudioSynthWaveform       waveform1;      //xy=193,342
-AudioPlaySdWav           effectsPlayer;  //xy=199,292
-AudioAnalyzeRMS          rms1;           //xy=316,200
-AudioSynthNoisePink      pink1;          //xy=464,202
-AudioEffectBitcrusher    bitcrusher1;    //xy=478,116
-AudioEffectBitcrusher    bitcrusher2;    //xy=478,159
-AudioMixer4              loopMixer;      //xy=647,438
-AudioMixer4              voiceMixer;     //xy=650,168
-AudioMixer4              effectsMixer;   //xy=651,306
-AudioOutputI2S           i2s2;           //xy=827,165
+AudioInputI2S            i2s1;           //xy=196,125
+AudioPlaySdWav           loopPlayer;     //xy=199,402
+AudioSynthWaveform       waveform1;      //xy=202,316
+AudioPlaySdWav           effectsPlayer;  //xy=208,266
+AudioAnalyzeRMS          rms1;           //xy=325,174
+AudioSynthNoisePink      pink1;          //xy=473,176
+AudioEffectBitcrusher    bitcrusher1;    //xy=487,90
+AudioEffectBitcrusher    bitcrusher2;    //xy=487,133
+AudioMixer4              loopMixer;      //xy=656,412
+AudioMixer4              voiceMixer;     //xy=659,142
+AudioMixer4              effectsMixer;   //xy=660,280
+AudioOutputI2S           i2s2;           //xy=836,139
 AudioConnection          patchCord1(i2s1, 0, rms1, 0);
 AudioConnection          patchCord2(i2s1, 0, bitcrusher1, 0);
 AudioConnection          patchCord3(i2s1, 0, bitcrusher2, 0);
@@ -92,7 +85,7 @@ AudioConnection          patchCord12(loopMixer, 0, effectsMixer, 3);
 AudioConnection          patchCord13(voiceMixer, 0, i2s2, 0);
 AudioConnection          patchCord14(voiceMixer, 0, i2s2, 1);
 AudioConnection          patchCord15(effectsMixer, 0, voiceMixer, 3);
-AudioControlSGTL5000     audioShield;    //xy=837,454
+AudioControlSGTL5000     audioShield;    //xy=846,428
 // GUItool: end automatically generated code
 
 // These pins are for the Teensy Audio Adaptor SD Card reader - DO NOT CHANGE!
@@ -133,12 +126,12 @@ const int RUNNING  = 5;
 float    MASTER_VOLUME; 
 int      MIC_GAIN        = 15;
 String   STARTUP_WAV     = "STARTUP.WAV";
-String   LOOP_WAV        = "CHATTER.WAV";
+String   LOOP_WAV        = "";
 String   BUTTON_WAV      = "TKT_CLK3.WAV";
 int      AUDIO_INPUT     = AUDIO_INPUT_MIC;
 int      EQ_TYPE         = FLAT_FREQUENCY;
-int      EQ_BANDS_SIZE   = 6;
-float    EQ_BANDS[6]     = { -1.0,0,1,0,-1.0 };
+int      EQ_BANDS_SIZE   = 5;
+float    EQ_BANDS[5]     = { -1.0,0,1,0,-1.0 };
 int      BITCRUSHER_SIZE = 4;
 int      BITCRUSHER[4]   = { 12,16384,10,10240 };
 float    LOOP_GAIN       = 4;
@@ -158,7 +151,7 @@ int      BUTTON_PIN;               // The pin to which a PTT button is connected
 boolean DEBUG = false;             // Set to true to have debug messages printed out...useful for testing
 
 elapsedMillis loopMillis = 0;
-long loopLength;
+unsigned int loopLength;
 
 /***
  * Parse and set a configuration setting
@@ -206,17 +199,22 @@ void parseSetting(String settingName, String settingValue)
   } else if (settingName.equalsIgnoreCase("voice_stop")) {  
     VOICE_STOP = settingValue.toFloat();
   } else if (settingName.equalsIgnoreCase("input")) {
-    if (settingValue.toInt() == 1) {
-      AUDIO_INPUT = AUDIO_INPUT_LINEIN;
-    } else {
-      AUDIO_INPUT = AUDIO_INPUT_MIC;
-    }
+      AUDIO_INPUT = settingValue.toInt();
+      if (AUDIO_INPUT > 1) {
+        AUDIO_INPUT = 1;
+      } else if (AUDIO_INPUT < 0) {
+        AUDIO_INPUT = 0;
+      }
   } else if (settingName.equalsIgnoreCase("eq")) {
     EQ_TYPE = settingValue.toInt();
     if (!EQ_TYPE or EQ_TYPE < 0 or EQ_TYPE > 3) {
       EQ_TYPE = FLAT_FREQUENCY;
     }
   } else if (settingName.equalsIgnoreCase("eq_bands")) {
+    // clear bands and prep for setting
+    for (int i = 0; i < EQ_BANDS_SIZE; i++) {
+      EQ_BANDS[i] = 0;
+    }
     // convert string to char array
     char buf[settingValue.length()+2];
     settingValue.toCharArray(buf, settingValue.length()+2);
@@ -253,52 +251,80 @@ void parseSetting(String settingName, String settingValue)
 /***
  * Converts all in-memory settings to string
  */
-String settingsToString() 
+String settingsToString(boolean save) 
 {
   String result = "";
-  result += "TKTalkie v2.0 www.tktalkie.com\n";
-  if (MASTER_VOLUME) {
-    result += "[volume=" + String(MASTER_VOLUME, 4) + "\n";
+  if (save) {
+    result += "TKTalkie v2.0 www.tktalkie.com\n";
   }
-  result += "# sound to play when TKTalkie is started\n";
+  if (MASTER_VOLUME > 0) {
+    result += "[volume=" + String(MASTER_VOLUME, 4).trim() + "]\n";
+  }
+  if (save) {
+    result += "# sound to play when TKTalkie is started\n";
+  }
   result += "[startup=" + STARTUP_WAV + "]\n";
-  result += "# chatter loop settings\n";
+  if (save) {
+    result += "# chatter loop settings\n";
+  }
   result += "[loop=" + LOOP_WAV + "]\n";
-  result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
-  result += "[loop_gain=" + String(LOOP_GAIN, 4) + "]\n";
-  result += "# VOICE ACTIVATION SETTINGS\n";
+  if (save) {
+    result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
+  }
+  result += "[loop_gain=" + String(LOOP_GAIN, 4).trim() + "]\n";
+  if (save) {
+    result += "# VOICE SETTINGS\n";
+     result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
+  }
+  result += "[voice_gain=" + String(VOICE_GAIN, 4).trim() + "]\n";
+  result += "[voice_start=" + String(VOICE_START, 4).trim() + "]\n";
+  result += "[voice_stop=" + String(VOICE_STOP, 4).trim() + "]\n";
   result += "[silence_time=" + String(SILENCE_TIME) + "]\n";
-  result += "[voice_start=" + String(VOICE_START, 4) + "]\n";
-  result += "[voice_stop=" + String(VOICE_STOP, 4) + "]\n";
-  result += "# PTT (Push-To-Talk) SETTINGS\n";
+  if (save) {
+    result += "# PTT (Push-To-Talk) SETTINGS\n";
+  }
   result += "[button_pin=" + String(BUTTON_PIN) + "]\n";
   result += "[button_click=" + BUTTON_WAV + "]\n";
-  result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
-  result += "[button_gain=" + String(BUTTON_GAIN, 4) + "]\n";
-  result += "# MICROPHONE/LINE-IN SETTINGS\n";
-  result += "# input settings (0 = microphone, 1 = line-in)\n";
+  if (save) {
+    result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
+  }
+  result += "[button_gain=" + String(BUTTON_GAIN, 4).trim() + "]\n";
+  if (save) {
+    result += "# MICROPHONE/LINE-IN SETTINGS\n";
+    result += "# input settings (0 = microphone, 1 = line-in)\n";
+  }
   result += "[input=" + String(AUDIO_INPUT) + "]\n";
-  result += "# 0 to 63\n";
+  if (save) {
+    result += "# 0 to 63\n";
+  }
   result += "[mic_gain=" + String(MIC_GAIN) + "]\n"; 
-  result += "# SOUND EFFECTS (STATIC BURSTS, ETC.)\n";
-  result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
-  result += "[effects_gain=" + String(EFFECTS_GAIN, 4) + "]\n";
-  result += "# EQUALIZER SETTINGS\n";
-  result += "# 0 = flat (none, 1 = parametric, 2 = bass/treble, 3 = graphic\n";
+  if (save) {
+    result += "# SOUND EFFECTS (STATIC BURSTS, ETC.)\n";
+    result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
+  }
+  
+  result += "[effects_gain=" + String(EFFECTS_GAIN, 4).trim() + "]\n";
+  if (save) {
+    result += "# EQUALIZER SETTINGS\n";
+    result += "# 0 = flat (none, 1 = parametric, 2 = bass/treble, 3 = graphic\n";
+  }
   result += "[eq=" + String(EQ_TYPE) + "]\n";
-  result += "# for parametric/graphic = 5 bands, for bass/treble = 3 bands\n";
-  result += "# bands are low to high: -1 (-11.75dB to 1 +12dB)\n";
+  if (save) {
+    result += "# for parametric/graphic = 5 bands, for bass/treble = 3 bands\n";
+    result += "# bands are low to high: -1 (-11.75dB to 1 +12dB)\n";    
+  }
   result += "[eq_bands=" + arrayToString(EQ_BANDS, EQ_BANDS_SIZE) + "]\n";
-  result += "# VOICE SETTINGS\n";
-  result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
-  result += "[voice_gain=" + String(VOICE_GAIN, 4) + "]\n";
-  result += "# BITCRUSHER SETTINGS - VOCAL EFFECTS\n";
-  result += "# Format = bits1,rate1,bits2,rate2\n";
-  result += "# Set to 16,41000,16,41000 to just pass-thru (disable)\n";
+  if (save) {
+    result += "# BITCRUSHER SETTINGS - VOCAL EFFECTS\n";
+    result += "# Format = bits1,rate1,bits2,rate2\n";
+    result += "# Set to 16,41000,16,41000 to just pass-thru (disable)\n";
+  }
   result += "[bitcrushers=" + arrayToString(BITCRUSHER, BITCRUSHER_SIZE) + "]\n";
-  result += "# PINK NOISE GENERATOR\n";
-  result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
-  result += "[noise_gain=" + String(NOISE_GAIN, 4) + "]\n";
+  if (save) {
+    result += "# PINK NOISE GENERATOR\n";
+    result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
+  }
+  result += "[noise_gain=" + String(NOISE_GAIN, 4).trim() + "]\n";
   result += "[debug=" + String((int)DEBUG) + "]\n";
   return result;
 }
@@ -309,19 +335,32 @@ String settingsToString()
 boolean saveSettings(String filename) 
 {
   boolean result = false;
-  File myFile = openFile(filename, FILE_WRITE);
+
+  File myFile = openFile("BACKUP.TMP", FILE_WRITE);
   if (myFile) {
-    String settings = settingsToString();
-    myFile.println(settings);
+    char c;
+    while (myFile.available()) {
+      c = myFile.read();
+      myFile.write(c);
+    }
     myFile.close();
-    result = true;
-  } 
-  Serial.print("Settings saved to " + filename + ": ");
-  if (result == true) {
-    Serial.println("SUCCESSFUL");
+
+    myFile = openFile(filename, FILE_WRITE);
+    if (myFile) {
+      String settings = settingsToString(true);
+      myFile.println(settings);
+      myFile.close();
+      result = true;
+      Serial.println("Settings saved to " + filename);
+    } else {
+      Serial.println("ERROR SAVING TO: " + filename);
+    }
+    
   } else {
-    Serial.println("ERROR");
+    Serial.println("ERROR CREATING TEMP BACKUP FILE");
   }
+  
+  
   return result;
 }
 
@@ -438,6 +477,7 @@ void applySettings()
   // chatter loop from SD card
   loopMixer.gain(0, LOOP_GAIN);
   loopMixer.gain(1, LOOP_GAIN);
+  audioShield.volume(readVolume());
 }
 
 /***
@@ -584,6 +624,12 @@ float readVolume()
       vol = vol / 1023;
       audioShield.volume(vol);
     }
+    if (vol > 1.0) {
+      vol = 1.0;
+    } else if (vol < 0) {
+      vol = 0;
+    }
+    //debug("READ VOLUME: " + String(vol, 4));
     return vol;
 }
 
@@ -656,6 +702,7 @@ void voiceOff()
   speaking = false;
   silent = false;
   stopped = 0;
+  pink1.amplitude(0);
   voiceMixer.gain(0, 0);
   voiceMixer.gain(1, 0);
 }
@@ -670,6 +717,7 @@ void voiceOn()
   // Reset the "user is talking" timer
   stopped = 0;
   // pops are ok here ;)
+  pink1.amplitude(NOISE_GAIN);
   voiceMixer.gain(0, VOICE_GAIN);
   voiceMixer.gain(1, VOICE_GAIN);
 }
@@ -786,7 +834,7 @@ void setup()
   Serial.println("Type 'debug=1' [ENTER] to see messages!");
   Serial.println("");
   // Always allocate memory for the audio shield!
-  AudioMemory(64);
+  AudioMemory(48);
   // turn on audio shield
   audioShield.enable();
   // disable volume during setup
@@ -811,7 +859,7 @@ void setup()
   // when choosing a file to play from the list later on...
   randomSeed(analogRead(0));
   // Initialize PTT button
-  if (BUTTON_PIN) {
+  if (BUTTON_PIN && BUTTON_PIN > 0) {
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     PTT.attach(BUTTON_PIN);
     PTT.interval(15);
@@ -831,10 +879,14 @@ void loop()
         saveSettings();
      } else if (str.equalsIgnoreCase("load")) {
         loadSettings();  
+        applySettings();
      } else if (str.equalsIgnoreCase("save")) {
         saveSettings();  
      } else if (str.equalsIgnoreCase("backup")) {
         saveSettings(BACKUP_FILE); 
+     } else if (str.equalsIgnoreCase("restore")) {
+        loadSettings(BACKUP_FILE);    
+        applySettings();
      } else if (str.equalsIgnoreCase("settings")) {
         showSettings();
      } else if (str.equalsIgnoreCase("files")) {
@@ -854,6 +906,7 @@ void loop()
              saveSettings(settingValue);  
           } else if (settingName.equalsIgnoreCase("load")) {
              loadSettings(settingValue);
+             applySettings();
           } else if (settingName.equalsIgnoreCase("play")) {
              playEffect(EFFECTS_PLAYER, settingValue);
           } else { 
@@ -891,7 +944,7 @@ void loop()
       STATE = STARTUP;
       break;
     case STARTUP:
-      // do nothing while startup file is being played
+      // do nothing while startup file is being playedÂ
       STATE = STARTING;
       playFile(EFFECTS_PLAYER, STARTUP_WAV, STARTED);
       break;
@@ -909,7 +962,6 @@ void loop()
       run();
       break;
   }
-  
 }
 
 /***
@@ -923,7 +975,8 @@ void run() {
   }
   
   if (BUTTON_PIN && button_initialized) {
-    
+
+    debug("BUTTON");
     // Check if there is silence.  If not, set a flag so that
     // we don't switch back to Voice Activated mode accidentally ;)
     if (speaking == true && silent == true) {
@@ -968,7 +1021,7 @@ void run() {
     
   } else {
 
-    if (ms > 24) {
+    //if (ms > 24) {
       // reset the counter!
       ms = 0;
       
@@ -1026,7 +1079,7 @@ void run() {
         
        }
 
-    }
+    //}
 
   }
   
@@ -1059,7 +1112,7 @@ String arrayToString(int arr[], int len)
 String arrayToString(float arr[], int len) 
 {
   String result = "";
-  for (int i =0 ; i < len; i++) {
+  for (int i = 0 ; i < len; i++) {
     result += String(arr[i]);
     if (i < len-1) {
       result += ",";  
@@ -1107,6 +1160,9 @@ void showHelp() {
   Serial.println("save={filename}    Save current settings to specified file (no braces!)"); 
   Serial.println("play={filename}    Play specified .WAV file (no braces, use full file name)");
   Serial.println("");
+  Serial.println("backup             Quick backup of settings file to SETTINGS.BAK");
+  Serial.println("restore            Quick restore from SETTINGS.BAK");
+  Serial.println("");
   Serial.println("CALIBRATING");
   Serial.println("To help set Voice-Activation thresholds, simply enter the command 'calibrate'");
   Serial.println("then follow the on-screen prompts.");
@@ -1136,7 +1192,7 @@ void printDivider() {
 void showSettings() {
   Serial.println("");
   printDivider();
-  Serial.println(settingsToString());
+  Serial.println(settingsToString(false));
   printDivider();
   Serial.println("");
 }

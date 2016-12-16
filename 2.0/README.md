@@ -96,8 +96,8 @@ The output level of the button sound.
 This setting specifies which voice input will be used, the microphone input or the line-in input. Default is microphone.
 
     # MICROPHONE/LINE-IN SETTINGS
-    # input settings (0 = microphone, 1 = line-in)
-    [input=0]
+    # input settings (1 = microphone, 0 = line-in)
+    [input=1]
 
 **mic_gain**
 

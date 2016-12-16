@@ -291,7 +291,7 @@ String settingsToString(boolean save)
   result += "[button_gain=" + String(BUTTON_GAIN, 4).trim() + "]\n";
   if (save) {
     result += "# MICROPHONE/LINE-IN SETTINGS\n";
-    result += "# input settings (0 = microphone, 1 = line-in)\n";
+    result += "# input settings (1 = microphone, 0 = line-in)\n";
   }
   result += "[input=" + String(AUDIO_INPUT) + "]\n";
   if (save) {

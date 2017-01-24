@@ -21,6 +21,11 @@
  * 
  * WHAT'S NEW:
  * 
+ * V2.2
+ *  1.  Added support for using LINE-OUT in addition to headphone
+ *  2.  Added new setting lineout=<value> to control line-out voltage
+ *  3.  Added new setting for linein=<value> to control line-in level
+ *  
  * V2.1 
  *  1.  A few bug fixes including saving of master volume and parsing of 
  *      settings file.
@@ -124,6 +129,9 @@ const int RUNNING  = 5;
 
 // Default settings - can be modified through settings file
 float    MASTER_VOLUME; 
+int      LINEOUT         = 29; // Valid values 13 to 31. Default teensy setting is 29.
+int      LINEIN          = 5;  // Value values 0 to 15. Default teensy setting is 5;
+int      HIPASS          = 0; // off by default, 1 = on
 int      MIC_GAIN        = 15;
 String   STARTUP_WAV     = "STARTUP.WAV";
 String   LOOP_WAV        = "";
@@ -170,6 +178,27 @@ void parseSetting(String settingName, String settingValue)
       MASTER_VOLUME = 1;
     } else if (MASTER_VOLUME < 0) {
       MASTER_VOLUME = 0;
+    }
+  } else if (settingName.equalsIgnoreCase("lineout")) {
+    LINEOUT = settingValue.toInt();
+    if (LINEOUT < 13) {
+      LINEOUT = 13;  
+    } else if (LINEOUT > 31) {
+      LINEOUT = 31;
+    }
+  } else if (settingName.equalsIgnoreCase("linein")) {
+    LINEIN = settingValue.toInt();
+    if (LINEIN < 0) {
+      LINEIN = 0;  
+    } else if (LINEIN > 15) {
+      LINEIN = 15;
+    }  
+  } else if (settingName.equalsIgnoreCase("high_pass")) {
+    HIPASS = settingValue.toInt();
+    if (HIPASS < 0) { 
+      HIPASS = 0;
+    } else if (HIPASS > 1) {
+      HIPASS = 1;
     }
   } else if (settingName.equalsIgnoreCase("mic_gain")) {
     MIC_GAIN = settingValue.toInt();  
@@ -261,6 +290,14 @@ String settingsToString(boolean save)
     result += "[volume=" + String(MASTER_VOLUME, 4).trim() + "]\n";
   }
   if (save) {
+    result += "# Line-In level. Valid values are 0 to 15";
+  }
+  result += "[linein=" + String(LINEIN).trim() + "]\n";
+  if (save) {
+    result += "# Line-Out level output. Valid values are 13 to 31";
+  }
+  result += "[lineout=" + String(LINEOUT).trim() + "]\n";
+  if (save) {
     result += "# sound to play when TKTalkie is started\n";
   }
   result += "[startup=" + STARTUP_WAV + "]\n";
@@ -276,6 +313,10 @@ String settingsToString(boolean save)
     result += "# VOICE SETTINGS\n";
      result += "# 0 to 32767, 1 is pass-thru, below 1 attenuates signal\n";
   }
+  if (save) {
+    result += "# turn high-pass filter on (1) or off (0)";
+  }
+  result += "[high_pass=" + String(HIPASS).trim() + "]\n";
   result += "[voice_gain=" + String(VOICE_GAIN, 4).trim() + "]\n";
   result += "[voice_start=" + String(VOICE_START, 4).trim() + "]\n";
   result += "[voice_stop=" + String(VOICE_STOP, 4).trim() + "]\n";
@@ -451,7 +492,11 @@ void applySettings()
   audioShield.inputSelect(AUDIO_INPUT);
   // adjust the gain of the input
   // adjust this as needed
-  audioShield.micGain(MIC_GAIN);
+  if (AUDIO_INPUT == 0) {
+    audioShield.lineInLevel(LINEIN);
+  } else {
+    audioShield.micGain(MIC_GAIN);
+  }  
   // You can modify these values to process the voice 
   // input.  See the Teensy bitcrusher demo for details.
   bitcrusher1.bits(BITCRUSHER[0]);
@@ -478,6 +523,12 @@ void applySettings()
   loopMixer.gain(0, LOOP_GAIN);
   loopMixer.gain(1, LOOP_GAIN);
   audioShield.volume(readVolume());
+  audioShield.lineOutLevel(LINEOUT);
+  if (HIPASS == 0) {
+    audioShield.adcHighPassFilterDisable();
+  } else {
+    audioShield.adcHighPassFilterEnable();
+  }
 }
 
 /***
@@ -822,25 +873,38 @@ void calibrate()
 void setup() 
 {
   STATE = BOOTING;
+  
   // You really only need the Serial connection 
   // for output while you are developing, so you 
   // can uncomment this and use Serial.println()
   // to write messages to the console.
   Serial.begin(57600);
+  
   delay(500);
+  
   Serial.println("");
   Serial.println("TKTalkie (c) 2016 Because...Interwebs!");
   Serial.println("www.TKTalke.com");
   Serial.println("Type 'debug=1' [ENTER] to see messages!");
   Serial.println("");
+  
   // Always allocate memory for the audio shield!
   AudioMemory(48);
+  
   // turn on audio shield
   audioShield.enable();
-  // disable volume during setup
+  
+  // disable volume and outputs during setup to avoid pops
+  audioShield.muteLineout();
+  audioShield.muteHeadphone();
   audioShield.volume(0);
+  
+  // turn on post processing
+  audioShield.audioPostProcessorEnable();
+
   // Activate the onboard pre-processor
-  audioShield.audioPreProcessorEnable();
+  //audioShield.audioPreProcessorEnable();
+  
   // Check SD card
   SPI.setMOSI(SDCARD_MOSI_PIN);
   SPI.setSCK(SDCARD_SCK_PIN);
@@ -944,7 +1008,9 @@ void loop()
       STATE = STARTUP;
       break;
     case STARTUP:
-      // do nothing while startup file is being playedÂ
+      // do nothing while startup file is being played
+      audioShield.unmuteLineout();
+      audioShield.unmuteHeadphone();
       STATE = STARTING;
       playFile(EFFECTS_PLAYER, STARTUP_WAV, STARTED);
       break;

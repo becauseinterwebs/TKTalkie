@@ -32,7 +32,7 @@ There are a wealth of examples on the Teensy website as well in the Arduino soft
 
 ## Getting Started
 
-Please reference the tutorial at http://www.tktalkie.com/tutorial for step-by-step instructions on assembline and programming your TKTalkie.
+Please reference the tutorial at http://www.tktalkie.com/tutorial for step-by-step instructions on assembling and programming your TKTalkie.
 
 ## WAV Files
 

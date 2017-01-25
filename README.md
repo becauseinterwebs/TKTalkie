@@ -36,7 +36,7 @@ Please reference the tutorial at http://www.tktalkie.com/tutorial for step-by-st
 
 ## WAV Files
 
-You can [download a zip file with WAV files here.] (http://www.becauseinterwebs.com/downloads/TKTalkieSounds.zip)
+You can [download a zip file with WAV files here.] (http://www.tktalkie.com/downloads/TKTalkieSounds.zip)
 
 Note that the SD Card reader is expecting filenames in all uppercase, 8.3 format (file name can be up to 8 characters, extension is 3 characters.)  The way the sketch is currently written, it will load all WAV files it finds that start with "TKT_" into an array and randomly select one to play whenever you stop talking.  You can, of course, change this.
 

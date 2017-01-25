@@ -21,24 +21,24 @@
  * 
  * WHAT'S NEW:
  * 
- * V2.2
+ * V2.2 (Jan 24, 2017)
  *  1.  Added support for using LINE-OUT in addition to headphone
  *  2.  Added new setting lineout=<value> to control line-out voltage
  *  3.  Added new setting for linein=<value> to control line-in level
  *  
- * V2.1 
+ * V2.1 (Dec 16, 2106)
  *  1.  A few bug fixes including saving of master volume and parsing of 
  *      settings file.
  *  2.  Fixed compiler error for unsigned integer check
  *      
- * V2.0
+ * V2.0 (Nov 26, 2016)
  *  1.  Added support for background loop (chatter) file
  *  2.  Added text config file to hold setting instead of having to modify 
  *      and recompile source code.
  *  3.  Added support for serial interface to allow live editing of settings
  *  4.  Added calibration wizard
  *  
- * V1.1
+ * V1.1 (Aug 26, 2016)
  *  1.  Added support for PTT (Push-To-Talk) Button.  If a button is present, it 
  *      is activated on first press.  Press it for 2 seconds without talking to 
  *      go back to Voice Activated mode.
@@ -51,7 +51,7 @@
  *      the Voice Activated mode will go completely silent when not talking and turn back 
  *      on when you start talking!
  *      
- * www.BecauseInterwebs.com
+ * www.tktalkie.com
  * 
  * 
  */
@@ -290,11 +290,11 @@ String settingsToString(boolean save)
     result += "[volume=" + String(MASTER_VOLUME, 4).trim() + "]\n";
   }
   if (save) {
-    result += "# Line-In level. Valid values are 0 to 15";
+    result += "# Line-In level. Valid values are 0 to 15\n";
   }
   result += "[linein=" + String(LINEIN).trim() + "]\n";
   if (save) {
-    result += "# Line-Out level output. Valid values are 13 to 31";
+    result += "# Line-Out level output. Valid values are 13 to 31\n";
   }
   result += "[lineout=" + String(LINEOUT).trim() + "]\n";
   if (save) {

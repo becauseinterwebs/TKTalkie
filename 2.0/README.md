@@ -22,6 +22,14 @@ The config file is named TKCONFIG.TXT and has the following format for configura
 
 The current settings and valid values are:
 
+**linein**
+
+Set the level for the line-in input. Valid values are 0 to 15, with 5 being the default. Lower numbers decrease the input level, higher numbers increase it. 
+
+**lineout**
+
+Set the level for the line-out signal.  Valid values are 13 to 31, with 29 being the default.  Lower numbers increase the level, higher numbers decrease it.
+
 **startup**
 
 This is the sound that is played each time TKTalkie starts.
@@ -101,10 +109,10 @@ This setting specifies which voice input will be used, the microphone input or t
 
 **mic_gain**
 
-The voice input level.
+The voice input level when using the microphone input.
 
     # 0 to 63
-    [mic_gain=15] 
+    [mic_gain=5] 
 
 > **NOTE**: If you are experiencing feedback, try adjusting the *mic_gain* setting first.
 
@@ -134,7 +142,7 @@ Depending upon they type of equalizer selected, specify the settings for each ba
 
 **voice_gain**
 
-Set the voice output level.
+Set the output level of the voice channel on the mixer.
 
     # VOICE SETTINGS
     # 0 to 32767, 1 is pass-thru, below 1 attenuates signal

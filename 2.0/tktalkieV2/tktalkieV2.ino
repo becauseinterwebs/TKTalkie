@@ -937,6 +937,7 @@ void setup()
  */
 void loop() 
 {
+
    if (Serial.available() > 0) { 
      String str = Serial.readStringUntil('\n');   
      if (str.equalsIgnoreCase("save")) {

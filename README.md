@@ -1,10 +1,12 @@
 # TK Talkie
 
-> **LATEST VERSION AVAILABLE IN 2.0**
+> **LATEST VERSION AVAILABLE IN 3.0**
 
 Code for Teensy 3.2 (or arduino compatible) and an audio shield to automatically add comm static when talking...or more precisely...when someone STOPS talking.
 
 This code is based on examples that come with the Teensy board from www.pjrc.com and Arduino (www.arduino.cc) and have been modified for a particular purpose and is distrubuted under the GNU General License.
+
+**YOU ARE FREE TO USE THIS CODE IN YOUR OWN PROJECTS, PROVIDED THEY ARE FOR PERSONAL, NON-COMMERCIAL USE.**
 
 In particular, the equipment that this was written for (but should work with other boards with minimal modification):
 

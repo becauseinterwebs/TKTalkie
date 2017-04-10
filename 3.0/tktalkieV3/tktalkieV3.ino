@@ -110,12 +110,10 @@ int listDirectories(const char *path, char directories[][SETTING_ENTRY_MAX])
    int index = 0;
    File dir = SD.open(path);
    dir.rewindDirectory();
-   Serial.print("READ DIR: ");
    Serial.println(path);
    while(true && index < MAX_FILE_COUNT) {
      File entry = dir.openNextFile();
      if (! entry) {
-      Serial.println("No More Files");
        // no more files
        if (dirSep != "") {
           dirSep = dirSep.substring(0, dirSep.length()-2);
@@ -123,8 +121,6 @@ int listDirectories(const char *path, char directories[][SETTING_ENTRY_MAX])
        break;
      }
      if (entry.isDirectory()) {
-       Serial.print(" -> DIR -> ");
-       Serial.println(entry.name());
        char *ret = strstr(entry.name(), "~");
        if (ret == NULL) {
          Serial.println(entry.name());
@@ -1358,10 +1354,7 @@ int loadSettings(const char *filename)
 {
   char settings[MAX_FILE_COUNT][SETTING_ENTRY_MAX];
   int total = loadSettingsFile(filename, settings, MAX_FILE_COUNT);
-  Serial.println("AFTER LOAD SETTINGS, CALLING PROCESS SETTINGS");
   processSettings(settings, total);
-  Serial.print("RETURNING TOTAL: ");
-  Serial.println(total);
   return total;
 }
 
@@ -1804,17 +1797,12 @@ void run() {
           char buf[100];
           strcpy(buf, PROFILES_DIR);
           strcat(buf, PROFILE_FILE);
-          Serial.print("LOADING FILE: ");
-          Serial.println(buf);
           loadSettings(buf);
-          Serial.println("CALLING APPLY SETTINGS");
           applySettings();
-          Serial.println("CALLING PLAY SOUND");
-          playSound(STARTUP_WAV);
-          Serial.println("CALLING PLAY LOOP");
+          long l = playSound(STARTUP_WAV);
+          delay(l+100);
           playLoop();
           // send to remote if connected
-          Serial.println("CALLING SEND CONFIG");
           sendConfig();
       } else if (strcasecmp(cmd_key, "play") == 0) {
           //playSoundFile(EFFECTS_PLAYER, cmd_val);

@@ -2,7 +2,7 @@
  * TK TALKIE by TK-81113 (Brent Williams) <becauseinterwebs@gmail.com>
  * www.tktalkie.com / www.tk81113.com 
  * 
- * Version 3.0 (Apr 5, 2016)
+ * Version 3.0 (Apr 10, 2016)
  *
  * WhiteArmor.net User ID: lerxstrulz
  * 

@@ -1,6 +1,6 @@
 # TKTalkie v3.0
 
-    Although this version of the software has been field-tested over several months, it still should be considered BETA...for now.  There are a few more things that can be done to "clean up" the code a little and organize it a bit better, so check back for updates.  Features for this version have been locked, however, so any code updates are for optimization purposes only.
+Although this version of the software has been field-tested over several months, it still should be considered BETA...for now.  There are a few more things that can be done to "clean up" the code a little and organize it a bit better, so check back for updates.  Features for this version have been locked, however, so any code updates are for optimization purposes only.
 
 ## About
 The TKTalkie software is part of the TKTalkie DIY project.  This revision has some significant changes designed to making it event easier to configure and use the system through the use of a BLE (Bluetooth Low Energy) device and a mobile app (iOS/Android) and contains the following improvements:

@@ -58,16 +58,15 @@ const char SETTINGS_FILE[SETTING_ENTRY_MAX]    = "SETTINGS.TXT";   // Global set
 
 // These are the paths where files are stored for the profile.  This can be changed via the app or
 // edited manually so that each profile can have its own files (or you can share them...)
-char EFFECTS_DIR[SETTING_ENTRY_MAX]            = "/effects/";      // effects sounds (mic pop, clicks, static, etc.)
-char SOUNDS_DIR[SETTING_ENTRY_MAX]             = "/sounds/";       // general sound files 
-char LOOP_DIR[SETTING_ENTRY_MAX]               = "/loops/";        // sound loops
+char EFFECTS_DIR[SETTING_ENTRY_MAX] = "/effects/";      // effects sounds (mic pop, clicks, static, etc.)
+char SOUNDS_DIR[SETTING_ENTRY_MAX]  = "/sounds/";       // general sound files 
+char LOOP_DIR[SETTING_ENTRY_MAX]    = "/loops/";        // sound loops
+const char PROFILES_DIR[11]         = "/profiles/";     // Location of config profiles
 
-const char PROFILES_DIR[11]                = "/profiles/";     // Location of config profiles
-
-const int STARTUP_SETTINGS_COUNT      = 4;                // counter for number of entries in global settings file
+const int STARTUP_SETTINGS_COUNT    = 4;                                 // counter for number of entries in global settings file
 char STARTUP_SETTINGS[STARTUP_SETTINGS_COUNT][SETTING_ENTRY_MAX];        // Holds settings values
 
-int STATE;                                          // current operational state of application
+int STATE;                                             // current operational state of application
 
 // operation states
 const int STATE_NONE     = 0;
@@ -115,7 +114,7 @@ boolean ECHO  = false;              // Set to true to have BLE TX/RX messages di
 char DEVICE_ID[50];                 // the uuid of the device connecting 
 char ACCESS_CODE[25] = "1138";      // the password for remote apps to access this device (specified in global settings file)
 boolean BT_CONNECTED = false;       // flag to indicate whether a remote app is connected or not
-boolean MUTED = false;              // flag to indicate whether all sounds should be muted
+boolean MUTED        = false;       // flag to indicate whether all sounds should be muted
 
 // Loops
 elapsedMillis loopMillis = 0;

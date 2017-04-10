@@ -639,9 +639,11 @@ void parseSetting(const char *settingName, char *settingValue)
         AUDIO_INPUT = 0;
       }
   } else if (strcasecmp(settingName, "eq") == 0) {
-    EQ_TYPE = atoi(settingValue);
-    if (!EQ_TYPE or EQ_TYPE < 0 or EQ_TYPE > 3) {
-      EQ_TYPE = FLAT_FREQUENCY;
+    EQ = atoi(settingValue);
+    if (EQ < 0) {
+      EQ = 0;
+    } else if (EQ > 1) {
+      EQ = 1;
     }
   } else if (strcasecmp(settingName, "eq_bands") == 0) {
     // clear bands and prep for setting
@@ -777,7 +779,7 @@ char *settingsToJson(char result[])
   strcat(result, tmp);
   strcat(result, ",");
 
-  sprintf(buf, "%d", EQ_TYPE);
+  sprintf(buf, "%d", EQ);
   sprintf(tmp, num_template, "eq", buf);
   strcat(result, tmp);
   strcat(result, ",");
@@ -919,7 +921,7 @@ char *settingsToString(char result[])
   memset(buf, 0, sizeof(buf));
 
   strcat(result, "[eq=");
-  sprintf(buf, "%d", EQ_TYPE);
+  sprintf(buf, "%d", EQ);
   strcat(result, buf);
   strcat(result, "]\n");
   memset(buf, 0, sizeof(buf));
@@ -1369,23 +1371,15 @@ int loadSettings(const char *filename)
 void applySettings() 
 {
   // Turn on the 5-band graphic equalizer (there is also a 7-band parametric...see the Teensy docs)
-  audioShield.eqSelect(EQ_TYPE);
-  switch (EQ_TYPE) {
-    case PARAMETRIC_EQUALIZER:
-    case GRAPHIC_EQUALIZER:
-      // Bands (from left to right) are: Low, Low-Mid, Mid, High-Mid, High.
-      // Valid values are -1 (-11.75dB) to 1 (+12dB)
-      // The settings below pull down the lows and highs and push up the mids for 
-      // more of a "tin-can" sound.
-      audioShield.eqBands(EQ_BANDS[0], EQ_BANDS[1], EQ_BANDS[2], EQ_BANDS[3], EQ_BANDS[4]);
-      break;
-    case TONE_CONTROLS:
-      // Just bass and treble
-      audioShield.eqBands(EQ_BANDS[0], EQ_BANDS[1]);
-      break;
-    default:
-      // FLAT_FREQUENCY - EQ disabled
-      break;
+  if (EQ == 0) {
+    audioShield.eqSelect(FLAT_FREQUENCY);
+  } else {
+    audioShield.eqSelect(GRAPHIC_EQUALIZER);
+    // Bands (from left to right) are: Low, Low-Mid, Mid, High-Mid, High.
+    // Valid values are -1 (-11.75dB) to 1 (+12dB)
+    // The settings below pull down the lows and highs and push up the mids for 
+    // more of a "tin-can" sound.
+    audioShield.eqBands(EQ_BANDS[0], EQ_BANDS[1], EQ_BANDS[2], EQ_BANDS[3], EQ_BANDS[4]);
   }
   // tell the audio shield which input to use
   audioShield.inputSelect(AUDIO_INPUT);
@@ -1841,8 +1835,6 @@ void run() {
             i = 1;
           }
           beep(i);
-      } else if (strcasecmp(cmd_key, "tx") == 0) {
-        sendConfig();
       } else if (strcasecmp(cmd_key, "mute") == 0) {
          audioShield.muteHeadphone();
          audioShield.muteLineout();

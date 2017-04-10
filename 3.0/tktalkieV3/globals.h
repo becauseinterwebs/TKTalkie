@@ -90,7 +90,7 @@ char     STARTUP_WAV[SETTING_ENTRY_MAX];
 char     LOOP_WAV[SETTING_ENTRY_MAX];
 char     BUTTON_WAV[SETTING_ENTRY_MAX];
 int      AUDIO_INPUT      = AUDIO_INPUT_MIC;
-int      EQ_TYPE          = FLAT_FREQUENCY;
+int      EQ               = 0;
 int      EQ_BANDS_SIZE    = 5;
 float    EQ_BANDS[5]      = { -1.0,0,1,0,-1.0 };
 int      BITCRUSHER_SIZE  = 4;

@@ -1,3 +1,7 @@
+/****
+ * Global variables/constants
+ */
+ 
 // GUItool: begin automatically generated code
 AudioInputI2S            i2s1;           //xy=196,125
 AudioPlaySdWav           loopPlayer;     //xy=199,402

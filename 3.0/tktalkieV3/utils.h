@@ -40,33 +40,6 @@ void upcase(char *str)
 }
 
 /**
- * Makes sure paths start and end with /
- */
-void fixPath(char *path)
-{
-   if (strcasecmp(path, "") == 0) {
-    return;
-   }
-
-   if (path[0] != '/') {
-     char buf[SETTING_ENTRY_MAX] = "/";
-     strcat(buf, path);
-     strcpy(path, buf);
-   }
-
-   int i = 1;
-   while (path[i] != '\0' && i < SETTING_ENTRY_MAX) {
-    i++;
-   }
-   
-   if (path[i-1] != '/') {
-    path[i]   = '/';
-    path[i+1] = '\0';
-   }
-
-}
-
-/**
  * Convert array of char strings to comma-delimited string 
  */
 char *arrayToString(char result[], const char arr[][SETTING_ENTRY_MAX], int len) 

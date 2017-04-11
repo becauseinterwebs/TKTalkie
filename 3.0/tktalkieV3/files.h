@@ -3,6 +3,57 @@
  */
 
 /**
+ * Make sure the file has an extension
+ */
+void addFileExt(char *path)
+{
+  char buf[SETTING_ENTRY_MAX];
+  strcpy(buf, path);
+  upcase(buf);
+  char *ret = strstr(buf, FILE_EXT);  
+  if (ret == NULL) {
+    strcat(path, FILE_EXT);
+  }
+}
+
+/**
+ * Make sure file has backup extension
+ */
+void addBackupExt(char *path)
+{
+  char buf[SETTING_ENTRY_MAX];
+  char *ret = strstr(path, ".");  
+  if (ret != NULL) {
+    char *ptr;
+    ret = strtok_r(path, ".", &ptr);
+  }
+  strcat(path, BACKUP_EXT);
+}
+
+/**
+ * Makes sure paths start and end with /
+ */
+void fixPath(char *path)
+{
+   if (strcasecmp(path, "") == 0) {
+    return;
+   }
+   if (path[0] != '/') {
+     char buf[SETTING_ENTRY_MAX] = "/";
+     strcat(buf, path);
+     strcpy(path, buf);
+   }
+   int i = 1;
+   while (path[i] != '\0' && i < SETTING_ENTRY_MAX) {
+    i++;
+   }
+   if (path[i-1] != '/') {
+    path[i]   = '/';
+    path[i+1] = '\0';
+   }
+}
+
+/**
  * Delete the specified file
  */
 boolean deleteFile(const char *filename) 
@@ -56,7 +107,6 @@ int listDirectories(const char *path, char directories[][SETTING_ENTRY_MAX])
    int index = 0;
    File dir = SD.open(path);
    dir.rewindDirectory();
-   Serial.println(path);
    while(true && index < MAX_FILE_COUNT) {
      File entry = dir.openNextFile();
      if (! entry) {

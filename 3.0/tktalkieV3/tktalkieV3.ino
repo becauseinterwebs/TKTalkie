@@ -273,6 +273,8 @@ void run() {
 
     if (Serial.available() > 0) { 
       Serial.readBytesUntil('\n', received, MAX_DATA_SIZE);
+      memset(cmd_key, 0, sizeof(cmd_key));
+      memset(cmd_val, 0, sizeof(cmd_val));
       char *key, *val, *buf;
       key = strtok_r(received, "=", &buf);
       val = strtok_r(NULL, "=", &buf);
@@ -340,8 +342,8 @@ void run() {
       // commands with values first
       if (strcasecmp(cmd_key, "config") == 0) {
         for (int i = 0; i < STARTUP_SETTINGS_COUNT; i++) {
-            Serial.println(STARTUP_SETTINGS[i]);
-          }
+          Serial.println(STARTUP_SETTINGS[i]);
+        }
       } else if (strcasecmp(cmd_key, "save") == 0) {
         if (strcasecmp(cmd_val, "") != 0) {
             char *ptr, *pfile, *pname;
@@ -356,10 +358,7 @@ void run() {
               strcpy(PROFILE_NAME, pname);
             }
          }
-         char *ptr = strstr(PROFILE_FILE, ".");
-         if (ptr == NULL) {
-          strcat(PROFILE_FILE, FILE_EXT);
-         }
+         addFileExt(PROFILE_FILE);
          debug(F("Save settings file %s with description %s\n"), PROFILE_FILE, PROFILE_NAME);
          if (saveSettingsFile(PROFILE_FILE) == true) {
           sendToApp("save", "1");
@@ -406,39 +405,35 @@ void run() {
               saveSettings();
           }
       } else if (strcasecmp(cmd_key, "default") == 0) {
+          if (strcasecmp(cmd_val, "") == 0) {
+            strcpy(cmd_val, PROFILE_FILE);
+          }
+          char ret[SETTING_ENTRY_MAX];
+          if (setDefaultProfile(cmd_val)) {
+            strcpy(ret, "1;");
+          } else {
+            strcpy(ret, "0;");
+          }
+          strcat(ret, cmd_val);
+          sendToApp("default", ret);
+      } else if (strcasecmp(cmd_key, "delete") == 0) {
           if (strcasecmp(cmd_val, "") != 0) {
             char ret[SETTING_ENTRY_MAX];
-            if (setDefaultProfile(cmd_val)) {
+            if (deleteProfile(cmd_val)) {
               strcpy(ret, "1;");
+              strcat(ret, cmd_val);
             } else {
-              strcpy(ret, "0;");
+              strcpy(ret, "0;Could not remove profile");
             }
-            strcat(ret, cmd_val);
-            sendToApp("default", ret);
-          } else {
-            sendToApp("default", "0");
+            sendToApp("delete", ret);
           }
-      } else if (strcasecmp(cmd_key, "delete") == 0) {
-          char *ret = strstr(cmd_val, ".");
-          if (ret == NULL) {
-            strcat(cmd_val, FILE_EXT);
-          }
-          if (deleteProfile(cmd_val)) {
-            strcpy(ret, "1;");
-            strcat(ret, cmd_val);
-          } else {
-            strcpy(ret, "0;Could not remove profile");
-          }
-          sendToApp("delete", ret);
       } else if (strcasecmp(cmd_key, "load") == 0) {
+          loopPlayer.stop();
           if (strcasecmp(cmd_val, "") != 0) {
             memset(PROFILE_FILE, 0, sizeof(PROFILE_FILE));
             strcpy(PROFILE_FILE, cmd_val);
           } 
-          char *ptr = strstr(PROFILE_FILE, ".");
-          if (ptr == NULL) {
-            strcat(PROFILE_FILE, FILE_EXT);
-          }
+          addFileExt(PROFILE_FILE);
           char buf[100];
           strcpy(buf, PROFILES_DIR);
           strcat(buf, PROFILE_FILE);
@@ -457,8 +452,10 @@ void run() {
       } else if (strcasecmp(cmd_key, "play_sound") == 0) {
           playSound(cmd_val);
       } else if (strcasecmp(cmd_key, "play_loop") == 0) {
-          memset(LOOP_WAV, 0, sizeof(LOOP_WAV));
-          strcpy(LOOP_WAV, cmd_val);
+          if (strcasecmp(cmd_val, "") != 0) {
+            memset(LOOP_WAV, 0, sizeof(LOOP_WAV));
+            strcpy(LOOP_WAV, cmd_val);
+          }
           playLoop();
       } else if (strcasecmp(cmd_key, "stop_loop") == 0) {
          loopPlayer.stop();
@@ -477,10 +474,31 @@ void run() {
          audioShield.unmuteLineout();
          MUTED = false;
       } else if (strcasecmp(cmd_key, "backup") == 0) {
-         saveSettingsFile(BACKUP_FILE); 
+         if (strcasecmp(cmd_val, "") == 0) {
+           strcpy(cmd_val, PROFILE_FILE);
+         }
+         addBackupExt(cmd_val);
+         saveSettingsFile(cmd_val, false); 
       } else if (strcasecmp(cmd_key, "restore") == 0) {
-         loadSettings(BACKUP_FILE);    
+         loopPlayer.stop();
+         if (strcasecmp(cmd_val, "") == 0) {
+           strcpy(cmd_val, PROFILE_FILE);
+         }
+         addBackupExt(cmd_val);
+         char *ret = strstr(cmd_val, PROFILES_DIR);
+         if (ret == NULL) {
+           char buf[SETTING_ENTRY_MAX];
+           strcpy(buf, PROFILES_DIR);
+           strcat(buf, cmd_val);
+           memset(cmd_val, 0, sizeof(cmd_val));
+           strcpy(cmd_val, buf);
+           memset(buf, 0, sizeof(buf));
+         }
+         loadSettings(cmd_val);    
          applySettings();
+         long l = playSound(STARTUP_WAV);
+         delay(1+100);
+         playLoop();
       } else if (strcasecmp(cmd_key, "settings") == 0) {
           Serial.println(F(""));
           Serial.println(PROFILE_FILE);

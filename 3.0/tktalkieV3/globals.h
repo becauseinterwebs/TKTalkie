@@ -57,7 +57,6 @@ boolean button_initialized = false;          // flag that lets us know if the PT
 const int EFFECTS_PLAYER = 1;
 const int LOOP_PLAYER = 2;
 
-const char BACKUP_FILE[SETTING_ENTRY_MAX]      = "SETTINGS.BAK";   // Generic backup file
 const char SETTINGS_FILE[SETTING_ENTRY_MAX]    = "SETTINGS.TXT";   // Global settings file
 
 // These are the paths where files are stored for the profile.  This can be changed via the app or
@@ -80,6 +79,7 @@ const int STATE_RUNNING  = 3;
 // Other defaults
 const char SOUND_EXT[5]  = ".WAV";
 const char FILE_EXT[5]   = ".TXT";
+const char BACKUP_EXT[5] = ".BAK";
 
 // Default settings - can be modified through settings file
 char     PROFILE_NAME[50] = "Default";
@@ -125,7 +125,8 @@ elapsedMillis loopMillis = 0;
 unsigned int loopLength;
 
 // loop and serial command handlers
-char cmd_key[SETTING_ENTRY_MAX], cmd_val[SETTING_ENTRY_MAX];
+char cmd_key[SETTING_ENTRY_MAX] = "";
+char cmd_val[SETTING_ENTRY_MAX] = "";
 const int MAX_DATA_SIZE = 100;
-char received[MAX_DATA_SIZE];
+char received[MAX_DATA_SIZE] = "";
 

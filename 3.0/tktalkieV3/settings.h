@@ -490,54 +490,49 @@ boolean saveSettings() {
 /**
  * Backup settings to specified file
  */
-boolean saveSettingsFile(const char *src) 
+boolean saveSettingsFile(const char *src, const boolean backup = true) 
 {
-  char filename[SETTING_ENTRY_MAX], backup[SETTING_ENTRY_MAX];
-  char bak[5] = ".BAK";
+  char filename[SETTING_ENTRY_MAX];
   boolean result = false;
   if (strcasecmp(src, "") == 0) {
     strcpy(filename, PROFILE_FILE);
   } else {
     strcpy(filename, src);
   }
-  // get last index of "." for file extension
-  char *ret = strstr(filename, ".");
-  if (ret == NULL) {
-    strcat(filename, FILE_EXT);
+  if (backup == true) {
+    addFileExt(filename);
   }
-  char *ptr, *fname;
-  fname = strtok_r(filename, ".", &ptr);
-  strcpy(backup, fname);
-  strcat(backup, bak);
-  strcat(filename, FILE_EXT);
-  char bakFileName[25];
+  // add profiles path to file name
   char srcFileName[25];
-  strcpy(bakFileName, PROFILES_DIR);
-  strcat(bakFileName, backup);
-  debug(F("Backup File: %s%s"), PROFILES_DIR, bakFileName);
   strcpy(srcFileName, PROFILES_DIR);
   strcat(srcFileName, filename);
-  File bakFile = openFile(bakFileName, FILE_WRITE);
-  File srcFile = openFile(srcFileName, FILE_READ);
-  debug(F("BACKUP FILE: %s\n"), bakFileName);
-  if (bakFile && srcFile) {
-    char c;
-    while (srcFile.available()) {
-      c = srcFile.read();
-      bakFile.write(c);
-    }
-    bakFile.close();
-    srcFile.close();
-  } else {
-    debug(F("**ERROR** creating backup file!\n"));
-    if (srcFile) {
-      srcFile.close();
-    }
-    if (bakFile) {
+  if (backup == true) {
+    char backupfile[SETTING_ENTRY_MAX];
+    strcpy(backupfile, PROFILES_DIR);
+    strcat(backupfile, filename);
+    addBackupExt(backupfile);
+    debug(F("Backup File: %s\n"), backupfile);
+    File bakFile = openFile(backupfile, FILE_WRITE);
+    File srcFile = openFile(srcFileName, FILE_READ);
+    if (bakFile && srcFile) {
+      char c;
+      while (srcFile.available()) {
+        c = srcFile.read();
+        bakFile.write(c);
+      }
       bakFile.close();
+      srcFile.close();
+    } else {
+      debug(F("**ERROR** creating backup file!\n"));
+      if (srcFile) {
+        srcFile.close();
+      }
+      if (bakFile) {
+        bakFile.close();
+      }
     }
   }
-  // add extension back to filename
+  // now save file
   debug(F("Save to: %s\n"), srcFileName);
   File newFile = openFile(srcFileName, FILE_WRITE);
   if (newFile) {
@@ -559,24 +554,17 @@ boolean saveSettingsFile(const char *src)
  * Set the specified file as the default profile that 
  * is loaded with TKTalkie starts
  */
-boolean setDefaultProfile(const char *filename) 
+boolean setDefaultProfile(char *filename) 
 {
-    char fname[SETTING_ENTRY_MAX];
-    char *ret = strstr(filename, ".");
-    if (ret == NULL) {
-      strcpy(fname, filename);
-      strcat(fname, FILE_EXT);
-    } else {
-      strcpy(fname, filename);
-    }
-    debug(F("Setting default profile to %s\n"), fname);
+    addFileExt(filename);
+    debug(F("Setting default profile to %s\n"), filename);
     char profiles[MAX_FILE_COUNT][SETTING_ENTRY_MAX];
     int total = listFiles(PROFILES_DIR, profiles, MAX_FILE_COUNT, FILE_EXT, false, false);
     boolean result = false;
     boolean found = false;
     for (int i = 0; i < total; i++) {
-      if (strcasecmp(profiles[i], fname) == 0) {
-        setSettingValue("profile", fname);
+      if (strcasecmp(profiles[i], filename) == 0) {
+        setSettingValue("profile", filename);
         found = true;
         break;
       }
@@ -601,30 +589,34 @@ boolean setDefaultProfile(const char *filename)
 /**
  * Remove a profile from the list and delete the file
  */
-boolean deleteProfile(const char *filename) 
+boolean deleteProfile(char *filename) 
 {
-  
   boolean result = false;
-
+  addFileExt(filename);
+  char path[SETTING_ENTRY_MAX];
+  strcpy(path, PROFILES_DIR);
+  strcat(path, filename);
+  debug(F("Deleting file %s\n"), path);
   // can't delete current profile
   if (strcasecmp(filename, PROFILE_FILE) == 0){
     debug(F("Cannot delete current profile\n"));
     result = false;
   } else {
-    result = deleteFile(filename);
-  }
+    result = deleteFile(path);
+    // if the profile filename was the default profile, 
+    // set the default profile to the currently loaded profile
+    if (result == true) {
+      char buffer[SETTING_ENTRY_MAX];
+      char *profile = getSettingValue(buffer, "profile");
+      if (strcasecmp(filename, profile) == 0) {
+        debug(F("Profile was default -> Setting default profile to current profile\n"));
+        setSettingValue("profile", PROFILE_FILE);
+        saveSettings();
+      }
+    }
 
-  // if the profile filename was the default profile, 
-  // set the default profile to the currently loaded profile
-  char buffer[SETTING_ENTRY_MAX];
-  char *profile = getSettingValue(buffer, "profile");
-  if (strcasecmp(filename, profile) == 0) {
-    debug(F("Profile was default -> Setting default profile to current profile\n"));
-    setSettingValue("profile", PROFILE_FILE);
-    saveSettings();
   }
   return result;
-  
 }
 
 /***

@@ -1,0 +1,55 @@
+TKTalkie v3.0 - www.tktalkie.com
+# Profile name
+[name=Sample Profile]
+# Headphone volume level. Valid values are 0 to 1
+[volume=0.4000]
+# Line-In level. Valid values are 0 to 15
+[linein=5]
+# Line-Out level output. Valid values are 13 to 31
+[lineout=29]
+# sound to play when TKTalkie is started
+[startup=STARTUP.WAV]
+# chatter loop settings
+[loop=TKLOOP.WAV]
+# 0 to 32767, 1 is pass-thru, below 1 attenuates signal
+[loop_gain=0.0000]
+# VOICE SETTINGS
+# 0 to 32767, 1 is pass-thru, below 1 attenuates signal
+# turn high-pass filter on (1) or off (0)[high_pass=0]
+[voice_gain=3.1000]
+[voice_start=0.061]
+[voice_stop=0.021]
+[silence_time=350]
+# PTT (Push-To-Talk) SETTINGS
+[button_pin=0]
+[button_click=TKT_CLK3.WAV]
+# 0 to 32767, 1 is pass-thru, below 1 attenuates signal
+[button_gain=1.0000]
+# MICROPHONE/LINE-IN SETTINGS
+# input settings (1 = microphone, 0 = line-in)
+[input=0]
+# 0 to 63
+[mic_gain=3]
+# SOUND EFFECTS (STATIC BURSTS, ETC.)
+# 0 to 32767, 1 is pass-thru, below 1 attenuates signal
+[effects_gain=0.4500]
+# EQUALIZER SETTINGS
+# 5 Band graphic EQ on/off  1 = on, 0 = off
+[eq=1]
+# for parametric/graphic = 5 bands, for bass/treble = 3 bands
+# bands are low to high: -1 (-11.75dB to 1 +12dB)
+[eq_bands=-0.10,-1.00,-0.10,-1.00,-1.00]
+# BITCRUSHER SETTINGS - VOCAL EFFECTS
+# Format = bits1,rate1,bits2,rate2
+# Set to 16,41000,16,41000 to just pass-thru (disable)
+[bitcrushers=16,22050,16,44100]
+# PINK NOISE GENERATOR
+# 0 to 32767, 1 is pass-thru, below 1 attenuates signal
+[noise_gain=0.1500]
+# Sound effects
+[effects_dir=/sounds/]
+# Background loops
+[loop_dir=/loops]
+# Startup sounds
+[sounds_dir=/sounds/]
+

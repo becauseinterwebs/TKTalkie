@@ -47,7 +47,7 @@ TKTalkie v3.0 - www.tktalkie.com
 # 0 to 32767, 1 is pass-thru, below 1 attenuates signal
 [noise_gain=0.1500]
 # Sound effects
-[effects_dir=/sounds/]
+[effects_dir=/effects/]
 # Background loops
 [loop_dir=/loops]
 # Startup sounds

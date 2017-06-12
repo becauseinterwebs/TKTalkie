@@ -1,6 +1,0 @@
-
-RECOMMENDED SETTINGS:
-Typically the baseline (voice_off) should not be less than .01
-As a rule of thumb, the baseline (voice_off) should not be less than .01 and the
-trigger level (voice_start) should be around .1 higher than the average reading.
-You can also try setting it midway between the average and peak settings.
